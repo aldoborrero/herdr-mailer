@@ -383,3 +383,118 @@ func TestPrivateBrokerRejectsUnauthorizedPublishers(t *testing.T) {
 		t.Fatal(info, e)
 	}
 }
+
+func TestBrokerReplyResolutionRejectsSecondButAcknowledgesReplay(t *testing.T) {
+	broker := testutil.NewBroker(t)
+	bridge, e := Connect(Config{URL: broker.URL, Stream: "RESOLUTIONS", Prefix: "resolutions"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer bridge.Close()
+	ctx := context.Background()
+	ask := sample()
+	ask.Kind = "ask"
+	db, e := store.Open(filepath.Join(t.TempDir(), "s"), ask.Owner)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer db.Close()
+	if _, e = db.Receive(ctx, ask); e != nil {
+		t.Fatal(e)
+	}
+	reply := sample()
+	reply.Kind = "reply"
+	reply.Author = "bob"
+	reply.Recipient = "alice"
+	reply.Correlation = ask.ID
+	sub, e := bridge.Subscribe("alice")
+	if e != nil {
+		t.Fatal(e)
+	}
+	consume := func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+		return bridge.Consume(ctx, sub, "alice", db.Receive)
+	}
+	if e = bridge.Publish(ctx, reply); e != nil {
+		t.Fatal(e)
+	}
+	if e = consume(); e != nil {
+		t.Fatal(e)
+	}
+	// Force a transport redelivery independent of the broker dedup window.
+	raw, _ := json.Marshal(reply)
+	if _, e = bridge.js.Publish("resolutions.bob.alice", raw); e != nil {
+		t.Fatal(e)
+	}
+	if e = consume(); e != nil {
+		t.Fatal("exact replay should be ACKed", e)
+	}
+	info, e := sub.ConsumerInfo()
+	if e != nil || info.NumAckPending != 0 {
+		t.Fatal(info, e)
+	}
+	second := reply
+	second.ID = uuid.NewString()
+	second.Body = "second answer"
+	if e = bridge.Publish(ctx, second); e != nil {
+		t.Fatal(e)
+	}
+	if e = consume(); !errors.Is(e, store.ErrAskResolved) {
+		t.Fatal("second answer was not rejected", e)
+	}
+	info, e = sub.ConsumerInfo()
+	if e != nil || info.NumAckPending != 1 {
+		t.Fatal("rejected reply was ACKed", info, e)
+	}
+	var messages, jobs, events, resolutions int
+	if e = db.DB.QueryRow(`SELECT (SELECT count(*) FROM messages),(SELECT count(*) FROM jobs),(SELECT count(*) FROM events),(SELECT count(*) FROM ask_resolutions)`).Scan(&messages, &jobs, &events, &resolutions); e != nil {
+		t.Fatal(e)
+	}
+	if messages != 2 || jobs != 2 || events != 2 || resolutions != 1 {
+		t.Fatal("replay/rejection left partial state", messages, jobs, events, resolutions)
+	}
+}
+
+func TestInvalidReplyRoutesAndCorrelationNeverACK(t *testing.T) {
+	ctx := context.Background()
+	ask := sample()
+	ask.Kind = "ask"
+	db, e := store.Open(filepath.Join(t.TempDir(), "s"), ask.Owner)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer db.Close()
+	if _, e = db.Receive(ctx, ask); e != nil {
+		t.Fatal(e)
+	}
+	notice := sample()
+	if _, e = db.Receive(ctx, notice); e != nil {
+		t.Fatal(e)
+	}
+	valid := sample()
+	valid.Kind = "reply"
+	valid.Author = "bob"
+	valid.Recipient = "alice"
+	valid.Correlation = ask.ID
+	changes := map[string]func(*record.Message){"wrong sender": func(m *record.Message) { m.Author = "mallory" }, "wrong target": func(m *record.Message) { m.Recipient = "mallory" }, "unknown ask": func(m *record.Message) { m.Correlation = uuid.NewString() }, "non ask": func(m *record.Message) { m.Correlation = notice.ID }}
+	for name, change := range changes {
+		t.Run(name, func(t *testing.T) {
+			m := valid
+			change(&m)
+			raw, _ := json.Marshal(m)
+			acked := false
+			e := Handle(ctx, "private."+m.Author+"."+m.Recipient, "private", m.Recipient, raw, db.Receive, func() error { acked = true; return nil })
+			if e == nil || acked {
+				t.Fatal("invalid reply ACKed", e, acked)
+			}
+		})
+	}
+	var messages, jobs, events, resolutions int
+	if e = db.DB.QueryRow(`SELECT (SELECT count(*) FROM messages),(SELECT count(*) FROM jobs),(SELECT count(*) FROM events),(SELECT count(*) FROM ask_resolutions)`).Scan(&messages, &jobs, &events, &resolutions); e != nil {
+		t.Fatal(e)
+	}
+	if messages != 2 || jobs != 2 || events != 2 || resolutions != 0 {
+		t.Fatal("invalid replies left partial state", messages, jobs, events, resolutions)
+	}
+}

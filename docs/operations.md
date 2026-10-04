@@ -39,6 +39,8 @@ Production requires authenticated trusted-daemon publishers in an isolated accou
 
 Back up the private owner file and SQLite consistently (stop this daemon or use SQLite's backup API; do not copy only the main database while WAL is active). Losing `owner.json` loses the owner identity and admin credential. Do not reinitialize over it or copy it into a worker credential. Tokens are not printed by registration; they are written with exclusive creation and mode 0600. An interrupted registration can rotate a session before its token file is saved; recover by registering again to a fresh output path.
 
+On upgrade, valid existing replies are backfilled into the unique ask-resolution registry. If an older database already contains multiple replies for one ask, or uncorrelated/unauthorized replies, startup fails closed and preserves the records for operator review. It does not silently choose a winning reply or delete historical evidence. A normal restart retains resolutions and accepts only exact replay of the selected reply. Invalid and competing broker replies are not ACKed; they require the same poison-record investigation described above.
+
 The flake exports `homeModules.herdr-mailer` and `nixosModules.herdr-mailer`. Both default to disabled and expose a package and optional Codex package. They start only a local daemon, with umask 0077, and enable no external NATS listener or firewall rule. Initialize the selected user's state first. Home Manager is preferred when Codex uses that user's login environment. NixOS requires an explicit existing user and absolute state directory; ensure the system service can access the user's Codex IPC environment. These modules are provided for later integration and have not been applied to the host.
 
 ```nix

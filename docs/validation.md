@@ -79,3 +79,19 @@ Implementation worker session UUID: `01a1074c-41e3-7210-99b4-319fe85549c8` (from
 | Exact queue arguments; no sandbox or approval override flags | `TestCodexArgumentsAndFailure`; state/IPC prerequisites and scoped Auto approval documented in operations |
 
 The broker ACL test uses test-only username/password credentials on isolated loopback. It verifies the permission boundary, not production NKey/JWT/TLS provisioning. No new live messages to model runtimes were needed for these regression tests. The initial live Codex evidence above remains limited to queue acceptance. An additive SQLite migration now upgrades the initial schema automatically; no separate general-purpose migration or replay command is provided.
+
+## Unique ask resolution review
+
+The coordinator's three original reproductions are included in `internal/store/coordinator_review_test.go`. On revision `924135a`, forged and unknown-ask broker replies were already rejected, while `TestCoordinatorRejectSecondReply` reproduced the missing single-resolution constraint. All three pass with the resolution registry.
+
+Additional regressions:
+
+- `TestReplyRejectsInvalidRoutesWithoutPartialState` and `TestInvalidReplyRoutesAndCorrelationNeverACK`: wrong sender, wrong recipient, missing ask and non-ask correlation; message/job/event/resolution counts remain unchanged and ACK is never called.
+- `TestSingleResolutionAndExactReplay`: first local response succeeds; distinct local/broker responses and modified replays fail; identical replay is idempotent.
+- `TestConcurrentRepliesChooseOneResolution`: 16 simultaneous local, broker or mixed attempts produce one resolution and no partial rows.
+- `TestConcurrentReplayIsIdempotent`: 16 identical deliveries insert one reply/job/event/resolution.
+- `TestResolutionRollsBackWithJobsAndEvents`: failed job/event inserts also roll back the reply and resolution, allowing a later valid retry.
+- `TestBrokerReplyResolutionRejectsSecondButAcknowledgesReplay`: real isolated JetStream accepts/ACKs exact replay and leaves a distinct second response unacknowledged; SQLite remains unchanged.
+- `TestResolutionSurvivesRestartAndUpgrade`, `TestUpgradeRejectsConflictingLegacyReplies` and `TestResolutionsScopedToAskOrigin`: upgrade/restart durability, preserved evidence on inconsistent legacy history, and independent asks sharing a UUID across origins.
+
+These guarantees concern durable ask resolution in SQLite. Native queue acceptance and model effects retain the separately documented ambiguity and duplicate limits.

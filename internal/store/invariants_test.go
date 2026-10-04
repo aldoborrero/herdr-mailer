@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -128,8 +129,8 @@ func TestIncomingReplyAuthorizationBeforePersistence(t *testing.T) {
 	if fresh, e := s.Receive(ctx, valid); e != nil || fresh {
 		t.Fatal("valid duplicate reply", fresh, e)
 	}
-	if _, e = s.Send(ctx, bob, "", "local answer", "reply", ask.ID, time.Hour, false); e != nil {
-		t.Fatal(e)
+	if _, e = s.Send(ctx, bob, "", "local answer", "reply", ask.ID, time.Hour, false); !errors.Is(e, ErrAskResolved) {
+		t.Fatal("second local answer after broker resolution was not rejected", e)
 	}
 }
 

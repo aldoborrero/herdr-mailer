@@ -18,6 +18,7 @@ import (
 )
 
 var ErrUnauthorized = errors.New("unauthorized or stale session")
+var ErrAskResolved = errors.New("ask already resolved by another reply")
 
 type Store struct {
 	DB      *sql.DB
@@ -82,6 +83,10 @@ func Open(dir, owner string) (*Store, error) {
 		return nil, fmt.Errorf("database owner mismatch or unreadable metadata")
 	}
 	if err = s.migrateOrigins(); err != nil {
+		db.Close()
+		return nil, err
+	}
+	if err = s.migrateResolutions(); err != nil {
 		db.Close()
 		return nil, err
 	}
@@ -190,6 +195,10 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 	if m.Owner != s.Owner {
 		return false, fmt.Errorf("untrusted owner")
 	}
+	b, err := json.Marshal(m)
+	if err != nil {
+		return false, err
+	}
 	tx, err := s.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return false, err
@@ -202,9 +211,10 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 			return false, ErrUnauthorized
 		}
 	}
+	var askKey string
 	if m.Kind == "reply" {
 		var raw string
-		if err = tx.QueryRowContext(ctx, "SELECT record FROM messages WHERE origin=? AND message_id=?", m.Owner+"/"+m.Recipient, m.Correlation).Scan(&raw); err != nil {
+		if err = tx.QueryRowContext(ctx, "SELECT id,record FROM messages WHERE origin=? AND message_id=?", m.Owner+"/"+m.Recipient, m.Correlation).Scan(&askKey, &raw); err != nil {
 			return false, fmt.Errorf("reply ask unavailable")
 		}
 		var ask record.Message
@@ -214,8 +224,19 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 		if ask.Kind != "ask" || ask.Owner != m.Owner || ask.Author != m.Recipient || ask.Recipient != m.Author {
 			return false, fmt.Errorf("unauthorized reply correlation")
 		}
+		var resolved string
+		err = tx.QueryRowContext(ctx, "SELECT m.record FROM ask_resolutions r JOIN messages m ON m.id=r.reply WHERE r.ask=?", askKey).Scan(&resolved)
+		if err == nil {
+			if resolved != string(b) {
+				return false, ErrAskResolved
+			}
+			// Only the exact accepted reply can be replayed. No message, job or event is added.
+			return false, tx.Commit()
+		}
+		if !errors.Is(err, sql.ErrNoRows) {
+			return false, err
+		}
 	}
-	b, _ := json.Marshal(m)
 	key := m.DeliveryID()
 	res, err := tx.ExecContext(ctx, "INSERT INTO messages(id,origin,message_id,recipient,record) VALUES(?,?,?,?,?) ON CONFLICT(origin,message_id) DO NOTHING", key, m.Origin(), m.ID, m.Recipient, string(b))
 	if err != nil {
@@ -224,12 +245,19 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 	n, _ := res.RowsAffected()
 	if n == 0 {
 		var old string
-		if err = tx.QueryRowContext(ctx, "SELECT record FROM messages WHERE origin=? AND message_id=?", m.Origin(), m.ID).Scan(&old); err != nil {
+		if err = tx.QueryRowContext(ctx, "SELECT id,record FROM messages WHERE origin=? AND message_id=?", m.Origin(), m.ID).Scan(&key, &old); err != nil {
 			return false, err
 		}
 		if old != string(b) {
 			return false, fmt.Errorf("message ID collision")
 		}
+	}
+	if askKey != "" {
+		if _, err = tx.ExecContext(ctx, "INSERT INTO ask_resolutions(ask,reply) VALUES(?,?)", askKey, key); err != nil {
+			return false, err
+		}
+	}
+	if n == 0 {
 		return false, tx.Commit()
 	}
 	var epoch int64

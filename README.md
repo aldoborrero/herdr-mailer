@@ -37,7 +37,7 @@ herdr-mailer status
 herdr-mailer doctor
 ```
 
-`ask` returns immediately with the durable message record. `reply` correlates with an ask addressed to the authenticated agent. All v0.1 command output is JSON. Reading marks a message read, which does not establish model processing. Native queue acceptance also does not mark it read.
+`ask` returns immediately with the durable message record. `reply` correlates with an ask addressed to the authenticated agent and resolves it once; a second distinct answer is rejected, while transport replay of the accepted reply is idempotent. All v0.1 command output is JSON. Reading marks a message read, which does not establish model processing. Native queue acceptance also does not mark it read.
 
 State defaults to `$XDG_STATE_HOME/herdr-mailer` or `~/.local/state/herdr-mailer`. Override with `--state` or `HERDR_MAILER_STATE`; directory permissions must be 0700. `--credential` or `HERDR_MAILER_CREDENTIAL` names a token file. No global aliases, hmail migrations, shared-server restarts or agent configuration edits are performed.
 
