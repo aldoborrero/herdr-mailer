@@ -47,7 +47,7 @@ func (c Codex) Deliver(ctx context.Context, s record.Session, m record.Message) 
 	if exe == "" {
 		exe = "codex"
 	}
-	text := fmt.Sprintf("[herdr-mailer %s; %s from %s; correlation=%s]\n%s", m.ID, m.Kind, m.Author, m.Correlation, m.Body)
+	text := fmt.Sprintf("[herdr-mailer %s; %s from %s; origin=%s; correlation=%s]\n%s", m.ID, m.Kind, m.Author, m.Origin(), m.Correlation, m.Body)
 	err := run(ctx, exe, "queue", "--thread", s.Location, "--message", text)
 	if ctx.Err() != nil {
 		return fmt.Errorf("%w: %v", ErrAmbiguous, ctx.Err())

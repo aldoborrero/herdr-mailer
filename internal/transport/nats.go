@@ -2,11 +2,13 @@
 package transport
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"time"
@@ -80,7 +82,7 @@ func (b *Bridge) Publish(ctx context.Context, m record.Message) error {
 	}
 	msg := nats.NewMsg(b.config.Prefix + "." + m.Author + "." + m.Recipient)
 	msg.Data = data
-	msg.Header.Set(nats.MsgIdHdr, m.ID)
+	msg.Header.Set(nats.MsgIdHdr, m.DeliveryID())
 	_, err = b.js.PublishMsg(msg, nats.Context(ctx))
 	return err
 }
@@ -94,8 +96,13 @@ func Handle(ctx context.Context, subject, prefix, recipient string, data []byte,
 	if len(parts) != 3 || parts[0] != prefix || parts[2] != recipient {
 		return fmt.Errorf("invalid subject")
 	}
-	if err := json.Unmarshal(data, &m); err != nil {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&m); err != nil {
 		return err
+	}
+	if err := dec.Decode(new(any)); err != io.EOF {
+		return fmt.Errorf("expected exactly one message record")
 	}
 	if err := m.Validate(); err != nil {
 		return err

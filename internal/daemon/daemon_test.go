@@ -178,7 +178,7 @@ func TestNativeEpochExpiryAndDurableRetries(t *testing.T) {
 	}
 	var attempts int
 	var state string
-	if e = s.Store.DB.QueryRow("SELECT attempts,state FROM jobs WHERE id=?", first.ID).Scan(&attempts, &state); e != nil || state != "stale" {
+	if e = s.Store.DB.QueryRow("SELECT attempts,state FROM jobs WHERE id=?", first.DeliveryID()).Scan(&attempts, &state); e != nil || state != "stale" {
 		t.Fatal(e, state)
 	}
 	if _, e = s.Store.DB.Exec("UPDATE jobs SET next=0 WHERE state='pending'"); e != nil {
@@ -346,5 +346,80 @@ func TestNativeRetryLimitAndUnsupportedRuntime(t *testing.T) {
 	status, e = s.Store.Status(ctx, "pi-agent")
 	if e != nil || status["native:unsupported"] != 1 {
 		t.Fatal(status, e)
+	}
+}
+
+func TestDelayedBrokerRecordKeepsExplicitRecipientSession(t *testing.T) {
+	s, _, a, _ := setup(t)
+	ctx := context.Background()
+	first, e := s.Store.Send(ctx, a, "bob", "in flight", "send", "", time.Hour, true)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if first.RecipientEpoch == 0 || first.RecipientSession == "" {
+		t.Fatal("sender did not pin target in record")
+	}
+	delayed := first
+	delayed.ID = "00000000-0000-4000-8000-000000000099"
+	replacement, _, e := s.Store.Register(ctx, "bob", "codex", "01a0f9be-cb70-7390-bcad-7c50b52940be")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = s.Store.Receive(ctx, delayed); e != nil {
+		t.Fatal(e)
+	}
+	// Even an equal epoch with a different session UUID must be refused.
+	wrongID := delayed
+	wrongID.ID = "00000000-0000-4000-8000-000000000098"
+	wrongID.RecipientEpoch = replacement.Epoch
+	if _, e = s.Store.Receive(ctx, wrongID); e != nil {
+		t.Fatal(e)
+	}
+	if e = s.ProcessNative(ctx); e != nil {
+		t.Fatal(e)
+	}
+	status, e := s.Store.Status(ctx, "bob")
+	if e != nil || status["native:stale"] != 3 || s.Adapter.(*fakeAdapter).calls.Load() != 0 {
+		t.Fatal(status, e)
+	}
+}
+
+func TestRegistrationSerializedWithNativeInjection(t *testing.T) {
+	s, _, a, _ := setup(t)
+	ctx := context.Background()
+	if _, e := s.Store.Send(ctx, a, "bob", "serialize", "send", "", time.Hour, false); e != nil {
+		t.Fatal(e)
+	}
+	entered, release := make(chan struct{}), make(chan struct{})
+	workerDone := make(chan error, 1)
+	s.Adapter = adapterFunc(func(ctx context.Context, binding record.Session, m record.Message) error {
+		current, e := s.Store.Session(ctx, m.Recipient)
+		if e != nil || current.ID != binding.ID || current.Epoch != m.RecipientEpoch {
+			return errors.New("stale binding at injection")
+		}
+		close(entered)
+		<-release
+		return nil
+	})
+	go func() { workerDone <- s.ProcessNative(ctx) }()
+	<-entered
+	registered := make(chan error, 1)
+	go func() {
+		_, e := s.dispatch(ctx, Request{Op: "register", Token: "admin", Agent: "bob", Runtime: "none"})
+		registered <- e
+	}()
+	select {
+	case e := <-registered:
+		close(release)
+		<-workerDone
+		t.Fatal("session rotated while injection was in flight", e)
+	case <-time.After(30 * time.Millisecond):
+	}
+	close(release)
+	if e := <-workerDone; e != nil {
+		t.Fatal(e)
+	}
+	if e := <-registered; e != nil {
+		t.Fatal(e)
 	}
 }

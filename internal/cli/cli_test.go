@@ -57,8 +57,8 @@ func TestCLICompatibilityFlow(t *testing.T) {
 	if e := json.Unmarshal(run("--credential", b, "inbox", "--unread", "--json"), &inbox); e != nil || len(inbox) != 2 {
 		t.Fatal(inbox, e)
 	}
-	run("--credential", b, "reply", ask.ID, "answer")
-	run("--credential", b, "read", ask.ID)
+	run("--credential", b, "reply", ask.ID, "answer", "--author", "alice")
+	run("--credential", b, "read", ask.ID, "--author", "alice")
 	run("--credential", b, "status")
 	run("--credential", b, "doctor")
 	run("--credential", b, "events", "--cursor", "0")

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/nats-io/nats.go"
 	"net"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,15 +16,21 @@ import (
 )
 
 type Broker struct {
-	URL  string
-	path string
-	port int
-	dir  string
-	cmd  *exec.Cmd
-	log  bytes.Buffer
+	URL    string
+	path   string
+	port   int
+	dir    string
+	config string
+	cmd    *exec.Cmd
+	log    bytes.Buffer
 }
 
 func NewBroker(t *testing.T) *Broker {
+	return NewBrokerWithConfig(t, "", "", "")
+}
+
+// NewBrokerWithConfig keeps authentication/ACL fixtures inside private test state.
+func NewBrokerWithConfig(t *testing.T, config, user, password string) *Broker {
 	t.Helper()
 	path := os.Getenv("NATS_SERVER")
 	if path == "" {
@@ -40,6 +47,20 @@ func NewBroker(t *testing.T) *Broker {
 	port := listener.Addr().(*net.TCPAddr).Port
 	listener.Close()
 	b := &Broker{path: path, port: port, dir: filepath.Join(t.TempDir(), "jetstream"), URL: fmt.Sprintf("nats://127.0.0.1:%d", port)}
+	if user != "" {
+		u, err := url.Parse(b.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		u.User = url.UserPassword(user, password)
+		b.URL = u.String()
+	}
+	if config != "" {
+		b.config = filepath.Join(t.TempDir(), "server.conf")
+		if err := os.WriteFile(b.config, []byte(config), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
 	t.Cleanup(func() { b.Stop() })
 	b.Start(t)
 	return b
@@ -47,7 +68,11 @@ func NewBroker(t *testing.T) *Broker {
 func (b *Broker) Start(t *testing.T) {
 	t.Helper()
 	b.log.Reset()
-	b.cmd = exec.Command(b.path, "-js", "-a", "127.0.0.1", "-p", strconv.Itoa(b.port), "-sd", b.dir)
+	args := []string{"-js", "-a", "127.0.0.1", "-p", strconv.Itoa(b.port), "-sd", b.dir}
+	if b.config != "" {
+		args = append(args, "-c", b.config)
+	}
+	b.cmd = exec.Command(b.path, args...)
 	b.cmd.Stdout = &b.log
 	b.cmd.Stderr = &b.log
 	if e := b.cmd.Start(); e != nil {

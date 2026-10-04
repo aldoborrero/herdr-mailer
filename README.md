@@ -51,7 +51,7 @@ herdr-mailer daemon --nats-url nats://127.0.0.1:4222 \
   --nats-credentials /private/path/bridge.creds
 ```
 
-The bridge keeps a separate durable broker outbox. Broker outages do not prevent local persistence. A broker ACK means persistence at that layer; it is never treated as a native-delivery receipt. SQLite suppresses repeated message IDs even after JetStream's deduplication window ends.
+The bridge keeps a separate durable broker outbox. Broker outages do not prevent local persistence. A broker ACK means persistence at that layer; it is never treated as a native-delivery receipt. SQLite suppresses repeated `(owner, author, message ID)` records even after JetStream's deduplication window ends and rejects conflicting content for that key.
 
 ## Development
 

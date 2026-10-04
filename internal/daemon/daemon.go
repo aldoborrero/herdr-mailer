@@ -26,6 +26,7 @@ type Request struct {
 	Op        string `json:"op"`
 	Token     string `json:"token,omitempty"`
 	Agent     string `json:"agent,omitempty"`
+	Author    string `json:"author,omitempty"`
 	Runtime   string `json:"runtime,omitempty"`
 	Location  string `json:"location,omitempty"`
 	Recipient string `json:"recipient,omitempty"`
@@ -161,6 +162,9 @@ func (s *Server) write(conn net.Conn, r Response) bool {
 	return json.NewEncoder(conn).Encode(r) == nil
 }
 func (s *Server) dispatch(ctx context.Context, r Request) (any, error) {
+	if r.Author != "" && r.Op != "read" && r.Op != "reply" {
+		return nil, fmt.Errorf("author selects an existing read/reply record; it cannot set the sender")
+	}
 	if r.Op == "register" {
 		if subtle.ConstantTimeCompare([]byte(identity.Hash(r.Token)), []byte(identity.Hash(s.Admin))) != 1 {
 			return nil, store.ErrUnauthorized
@@ -183,11 +187,11 @@ func (s *Server) dispatch(ctx context.Context, r Request) (any, error) {
 				return nil, err
 			}
 		}
-		return s.Store.Send(ctx, r.Token, r.Recipient, r.Body, r.Op, r.ID, ttl, s.Broker != nil)
+		return s.Store.Send(ctx, r.Token, r.Recipient, r.Body, r.Op, r.ID, ttl, s.Broker != nil, r.Author)
 	case "inbox":
 		return s.Store.Inbox(ctx, session.Agent, r.Unread)
 	case "read":
-		return s.Store.Read(ctx, session.Agent, r.ID, true)
+		return s.Store.Read(ctx, session.Agent, r.ID, true, r.Author)
 	case "status":
 		return s.Store.Status(ctx, session.Agent)
 	case "doctor":
@@ -314,6 +318,9 @@ func (s *Server) deliver(ctx context.Context, j store.Job) error {
 	}
 	if j.Epoch != 0 && j.Epoch != session.Epoch {
 		return finish("stale", fmt.Errorf("recipient epoch changed"))
+	}
+	if j.Message.RecipientSession != "" && j.Message.RecipientSession != session.ID {
+		return finish("stale", fmt.Errorf("recipient session changed"))
 	}
 	if j.Epoch == 0 {
 		if err = s.Store.Bind(ctx, j, session.Epoch); err != nil {

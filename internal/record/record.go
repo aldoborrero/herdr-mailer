@@ -11,18 +11,20 @@ const MessageType = "com.example.herdr.messageV1"
 const SessionType = "com.example.herdr.sessionV1"
 
 type Message struct {
-	Type        string    `json:"$type"`
-	ID          string    `json:"id"`
-	Owner       string    `json:"owner"`
-	Author      string    `json:"author"`
-	Recipient   string    `json:"recipient"`
-	Session     string    `json:"session"`
-	Epoch       int64     `json:"epoch"`
-	CreatedAt   time.Time `json:"createdAt"`
-	ExpiresAt   time.Time `json:"expiresAt"`
-	Kind        string    `json:"kind"`
-	Correlation string    `json:"correlation,omitempty"`
-	Body        string    `json:"body"`
+	Type             string    `json:"$type"`
+	ID               string    `json:"id"`
+	Owner            string    `json:"owner"`
+	Author           string    `json:"author"`
+	Recipient        string    `json:"recipient"`
+	Session          string    `json:"session"`
+	Epoch            int64     `json:"epoch"`
+	RecipientSession string    `json:"recipientSession,omitempty"`
+	RecipientEpoch   int64     `json:"recipientEpoch,omitempty"`
+	CreatedAt        time.Time `json:"createdAt"`
+	ExpiresAt        time.Time `json:"expiresAt"`
+	Kind             string    `json:"kind"`
+	Correlation      string    `json:"correlation,omitempty"`
+	Body             string    `json:"body"`
 }
 type Session struct {
 	Type      string    `json:"$type"`
@@ -42,6 +44,9 @@ func (m Message) Validate() error {
 	if m.Kind != "send" && m.Kind != "ask" && m.Kind != "reply" {
 		return fmt.Errorf("invalid kind")
 	}
+	if (m.RecipientSession != "" || m.RecipientEpoch != 0) && (!ValidUUID(m.RecipientSession) || m.RecipientEpoch < 1) {
+		return fmt.Errorf("recipient session and epoch must be a valid pair")
+	}
 	if m.Kind == "reply" && !ValidUUID(m.Correlation) {
 		return fmt.Errorf("reply needs ask correlation")
 	}
@@ -50,6 +55,11 @@ func (m Message) Validate() error {
 	}
 	return nil
 }
+
+// Origin is a stable logical author within the configured trusted owner domain.
+// Session rotation does not change the deduplication namespace.
+func (m Message) Origin() string     { return m.Owner + "/" + m.Author }
+func (m Message) DeliveryID() string { return m.Origin() + "/" + m.ID }
 
 func ValidUUID(s string) bool {
 	id, err := uuid.Parse(s)

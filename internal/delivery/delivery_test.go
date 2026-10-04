@@ -16,7 +16,7 @@ func TestCodexArgumentsAndFailure(t *testing.T) {
 	calls := 0
 	c := Codex{Executable: "/private/codex", Run: func(ctx context.Context, exe string, args ...string) error {
 		calls++
-		if exe != "/private/codex" || !reflect.DeepEqual(args, []string{"queue", "--thread", s.Location, "--message", "[herdr-mailer id; ask from alice; correlation=]\n" + m.Body}) {
+		if exe != "/private/codex" || !reflect.DeepEqual(args, []string{"queue", "--thread", s.Location, "--message", "[herdr-mailer id; ask from alice; origin=/alice; correlation=]\n" + m.Body}) {
 			t.Fatal(exe, args)
 		}
 		return failure

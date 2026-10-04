@@ -132,6 +132,7 @@ func New(out, errOut io.Writer) *cobra.Command {
 	root.AddCommand(serve)
 	for _, op := range []string{"send", "ask", "reply"} {
 		var ttl string
+		var askAuthor string
 		target := "recipient"
 		if op == "reply" {
 			target = "ask-id"
@@ -141,10 +142,14 @@ func New(out, errOut io.Writer) *cobra.Command {
 			if cmd.Name() == "reply" {
 				r.ID = args[0]
 				r.Recipient = ""
+				r.Author = askAuthor
 			}
 			return call(cmd, r)
 		}}
 		c.Flags().StringVar(&ttl, "ttl", "24h", "delivery expiry (maximum 720h)")
+		if op == "reply" {
+			c.Flags().StringVar(&askAuthor, "author", "", "original ask author when an ID is ambiguous")
+		}
 		root.AddCommand(c)
 	}
 	var unread bool
@@ -153,9 +158,12 @@ func New(out, errOut io.Writer) *cobra.Command {
 	}}
 	c.Flags().BoolVar(&unread, "unread", false, "only unread messages")
 	root.AddCommand(c)
-	root.AddCommand(&cobra.Command{Use: "read <id>", Args: cobra.ExactArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
-		return call(cmd, daemon.Request{Op: "read", ID: args[0]})
-	}})
+	var readAuthor string
+	read := &cobra.Command{Use: "read <id>", Args: cobra.ExactArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
+		return call(cmd, daemon.Request{Op: "read", ID: args[0], Author: readAuthor})
+	}}
+	read.Flags().StringVar(&readAuthor, "author", "", "message author when an ID is ambiguous")
+	root.AddCommand(read)
 	for _, op := range []string{"status", "doctor"} {
 		root.AddCommand(&cobra.Command{Use: op, Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error { return call(cmd, daemon.Request{Op: cmd.Name()}) }})
 	}

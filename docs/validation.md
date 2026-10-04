@@ -64,3 +64,18 @@ This proves successful queue-command acceptance through the real adapter. It doe
 One trusted same-UID owner domain and one local routing authority; no cross-owner federation, PDS, public identity resolution or multi-host identity provisioning. Durable storage has no automatic pruning, quotas, schema migration command or terminal-job replay command. Broker poison records need operator investigation. Supported native delivery is Codex only; Pi/Claude are explicit unsupported adapters. Session credential isolation depends on the documented OS trust boundary. Crashes between native acceptance and receipt persistence may duplicate delivery.
 
 The NixOS service module was also evaluated with `nixpkgs.lib.nixosSystem` against a synthetic user and `/tmp/herdr-mailer-module-eval` state path. The resulting unit selects the mailer executable, the explicit user, umask 0077 and restart-on-failure; no host configuration was activated.
+
+## Coordinator invariants follow-up
+
+Implementation worker session UUID: `01a1074c-41e3-7210-99b4-319fe85549c8` (from the session environment). This follow-up keeps the same assigned worktree and uses no additional agents.
+
+| Invariant | Concrete tests |
+| --- | --- |
+| Trusted single-owner NATS domain, strict payload/route checks, restricted publishing credentials | `TestUntrustedEnvelopeNeverPersistsOrAcknowledges`, `TestPrivateBrokerRejectsUnauthorizedPublishers` (real server with distinct bridge/worker credentials and subject ACLs) |
+| UUID/epoch preserved through delayed broker receipt; registration serialized with injection | `TestDelayedBrokerRecordKeepsExplicitRecipientSession`, `TestRegistrationSerializedWithNativeInjection`, `TestNativeEpochExpiryAndDurableRetries` |
+| Persistent origin+ID dedup, conflicting content rejected, correct origin selection | `TestOriginScopedDedupRestartAndAmbiguousRead`, `TestBrokerDedupIncludesOrigin`, `TestUpgradePreservesLegacyRowsJobsAndEventCursors` |
+| Reply correlation and recipient authorization before persistence and ACK | `TestIncomingReplyAuthorizationBeforePersistence`, `TestReplyNotAcknowledgedUntilAuthorizedAskExists` (real server, pending ACK until the ask exists) |
+| Broker ACK, native acceptance and unread/model state kept separate | `TestBrokerAckDoesNotClaimNativeAcceptanceOrRead`, `TestShutdownPersistsAmbiguousOutcome`, `TestTimeoutAmbiguousAndExpiredNoInvocation` |
+| Exact queue arguments; no sandbox or approval override flags | `TestCodexArgumentsAndFailure`; state/IPC prerequisites and scoped Auto approval documented in operations |
+
+The broker ACL test uses test-only username/password credentials on isolated loopback. It verifies the permission boundary, not production NKey/JWT/TLS provisioning. No new live messages to model runtimes were needed for these regression tests. The initial live Codex evidence above remains limited to queue acceptance. An additive SQLite migration now upgrades the initial schema automatically; no separate general-purpose migration or replay command is provided.

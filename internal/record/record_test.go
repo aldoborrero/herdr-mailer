@@ -34,7 +34,7 @@ func TestUUIDAndMessageValidation(t *testing.T) {
 // This is a schema/record consistency check, not a full ATProto validator.
 func TestLexiconRecordConsistency(t *testing.T) {
 	now := time.Now().UTC()
-	records := []any{Message{Type: MessageType, ID: uuid.NewString(), Owner: "did:key:test", Author: "alice", Recipient: "bob", Session: uuid.NewString(), Epoch: 1, CreatedAt: now, ExpiresAt: now.Add(time.Hour), Kind: "reply", Correlation: uuid.NewString(), Body: "body"}, Session{Type: SessionType, Owner: "did:key:test", Agent: "alice", ID: uuid.NewString(), Epoch: 1, Runtime: "none", Location: "", CreatedAt: now}}
+	records := []any{Message{Type: MessageType, ID: uuid.NewString(), Owner: "did:key:test", Author: "alice", Recipient: "bob", Session: uuid.NewString(), Epoch: 1, RecipientSession: uuid.NewString(), RecipientEpoch: 1, CreatedAt: now, ExpiresAt: now.Add(time.Hour), Kind: "reply", Correlation: uuid.NewString(), Body: "body"}, Session{Type: SessionType, Owner: "did:key:test", Agent: "alice", ID: uuid.NewString(), Epoch: 1, Runtime: "none", Location: "", CreatedAt: now}}
 	for _, r := range records {
 		raw, e := json.Marshal(r)
 		if e != nil {
@@ -104,5 +104,22 @@ func TestLexiconRecordConsistency(t *testing.T) {
 				t.Fatal("unexpected field type", prop.Type)
 			}
 		}
+	}
+}
+
+func TestRecipientBindingMustBeComplete(t *testing.T) {
+	m := Message{Type: MessageType, ID: uuid.NewString(), Owner: "did:key:test", Author: "alice", Recipient: "bob", Session: uuid.NewString(), Epoch: 1, CreatedAt: time.Now().UTC(), ExpiresAt: time.Now().UTC().Add(time.Hour), Kind: "send", Body: "body"}
+	m.RecipientSession = uuid.NewString()
+	if m.Validate() == nil {
+		t.Fatal("accepted target UUID without epoch")
+	}
+	m.RecipientSession = ""
+	m.RecipientEpoch = 1
+	if m.Validate() == nil {
+		t.Fatal("accepted target epoch without UUID")
+	}
+	m.RecipientSession = uuid.NewString()
+	if e := m.Validate(); e != nil {
+		t.Fatal(e)
 	}
 }

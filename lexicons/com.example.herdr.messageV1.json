@@ -24,7 +24,7 @@
           "id": {
             "type": "string",
             "maxLength": 36,
-            "description": "Stable UUID; also the broker deduplication ID."
+            "description": "Stable UUID scoped to owner and logical author for deduplication."
           },
           "owner": {
             "type": "string",
@@ -45,6 +45,15 @@
             "maxLength": 36
           },
           "epoch": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "recipientSession": {
+            "type": "string",
+            "maxLength": 36,
+            "description": "Explicit recipient session UUID, paired with recipientEpoch. Never rebound on receipt."
+          },
+          "recipientEpoch": {
             "type": "integer",
             "minimum": 1
           },
