@@ -4,6 +4,8 @@ Fecha: 4 de octubre de 2026. Estudio y propuesta, no implementación del supervi
 
 **Actualización del mismo día:** la [ampliación del ecosistema](ecosystem-expansion.md) incorpora herdr-projects, Pi Herdsman, pi-workflows, GNHF y otras alternativas que no cubría esta primera comparación. La recomendación actual es evaluar **herdr-projects + mailer antes de construir un controlador nuevo**. Las pruebas e invariantes de este documento siguen siendo aplicables; la elección de implementar desde cero queda condicionada a esa evaluación.
 
+Esa evaluación está documentada en el [estudio profundo de Projects](herdr-projects-assessment.md): se recomienda reutilizarlo como base y reforzar la autoridad de ejecución, con correcciones previas para NixOS y reparto remoto. No se considera equivalente al diseño completo por instalarlo sin cambios.
+
 **Propuesta original, ahora alternativa condicionada: plugin propio en Rust, pequeño y separado de mailer, que use la gestión nativa de worktrees y sesiones de Herdr.** Un controlador persistente conserva tareas y aplica reglas; una sesión real de Codex, Claude o Pi toma las decisiones que requieren razonamiento. Mailer comunica y despierta a los agentes. SQLite conserva el estado de la coordinación. NATS sigue siendo opcional y pertenece a mailer.
 
 Rust y Go son técnicamente viables. La recomendación de Rust es una decisión de diseño para un componente nuevo con estados explícitos y una posible TUI; **no se basa en acceso privilegiado a Herdr, en una mejora de rendimiento medida ni en que Go carezca de SDK**. Las consultas reales con ambos lenguajes funcionaron.

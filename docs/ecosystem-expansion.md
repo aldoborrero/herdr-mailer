@@ -2,6 +2,8 @@
 
 Investigación del 4 de octubre de 2026. Complementa [viabilidad del supervisor](supervisor-feasibility.md); no instala ni implementa otro controlador.
 
+**Revisión posterior:** el [estudio profundo de herdr-projects](herdr-projects-assessment.md) ejecuta la suite y pruebas independientes. Recomienda Projects como base adaptada, no como sustituto sin cambios: confirma límites de ejecución y un fallo de reparto entre proyectos que comparten host remoto.
+
 **La recomendación anterior de construir directamente un plugin propio debe quedar condicionada a evaluar herdr-projects.** Es un candidato mucho más cercano a nuestro producto de lo que recogía la primera comparación. Pi Herdsman merece una comparación paralela si aceptamos que la coordinación dependa de Pi. GNHF es útil para ejecutar iteraciones dentro de una tarea.
 
 Se inspeccionaron doce repositorios públicos en revisiones fijadas, incluidos documentación, manifiestos y rutas de código relevantes. No se ejecutaron sus agentes, instaladores, suites ni pruebas de recuperación: la presencia de tests no demuestra que pasen aquí. Las conclusiones de adopción son juicios de encaje, no certificaciones de fiabilidad. Las [fuentes y revisiones](research/ecosystem/revisions.json) permiten repetir la revisión. Los resultados del estudio anterior siguen siendo la evidencia sobre nuestra instalación: Herdr 0.9.1/protocolo 22 y Pi 0.87.1, no las versiones anunciadas por los proyectos nuevos.

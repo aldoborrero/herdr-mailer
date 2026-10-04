@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-04",
+  "upstream_repository": "https://github.com/eliasstravik/herdr-projects",
+  "upstream_revision": "4e4548c3c43888e6be1c96906215998f07dc63f0",
+  "scope": "Source review, upstream tests and seven independent characterization probes; no live remote machines or model runs.",
+  "artifacts": {
+    "coordinator_review.rs": "1bca817a3f35e78ca2c6ecf14a89391557ebfca5effb18a67e19bece3d9dd556",
+    "review-module.patch": "bc124f4149b59c73dbf1aafba5ae9ab71de7b5221b39bcebe39845a4bb08c41c",
+    "nixos-kill.patch": "386909c79df871b7392e4318b1c94c822f316e75cacda96acf822fdc7d4b8a70",
+    "upstream-tests.log": "bccc8b7acc318ad5e27d4fce8c0a6537e92ff6c7db36366c65936e880b7d4f82",
+    "remote-scheduler.log": "f1e75b455bdb8b2cc0b86a79bfa90c5248a3795d67e3191105236cd5d39c2033",
+    "patched-tests.log": "ec59ba41fe179299cd535481daaad3505ce0277f40bc7cf25002356b2c4c167c"
+  }
+}

@@ -1,0 +1,21 @@
+diff --git a/src/runner.rs b/src/runner.rs
+index b76b560..68c3086 100644
+--- a/src/runner.rs
++++ b/src/runner.rs
+@@ -306,14 +306,14 @@ fn kill(child: &mut std::process::Child, own_group: bool) {
+     if own_group {
+         // The child is its group's leader, so its pid is the pgid. Grandchildren
+         // hold the pipes open; killing only the child would leave readers hanging.
+-        let _ = Command::new("/bin/kill")
++        let _ = Command::new("kill")
+             .args(["-TERM", "--", &format!("-{}", child.id())])
+             .stdin(Stdio::null())
+             .stdout(Stdio::null())
+             .stderr(Stdio::null())
+             .status();
+         std::thread::sleep(Duration::from_millis(200));
+-        let _ = Command::new("/bin/kill")
++        let _ = Command::new("kill")
+             .args(["-KILL", "--", &format!("-{}", child.id())])
+             .stdin(Stdio::null())
+             .stdout(Stdio::null())

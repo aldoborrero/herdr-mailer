@@ -4,6 +4,8 @@ Estado: propuesta resultante del [estudio de viabilidad](supervisor-feasibility.
 
 La [ampliación de investigación](ecosystem-expansion.md) recomienda evaluar herdr-projects + mailer antes de implementar este motor. Los contratos de este diseño sirven también como criterios de aceptación para esa adaptación.
 
+El [estudio profundo de Projects](herdr-projects-assessment.md) concreta esa adaptación, sus límites comprobados y una evolución de un host a ejecutores SSH. Este documento conserva los contratos exigidos; no implica construir una segunda autoridad de tareas junto a Projects.
+
 ## Responsabilidades
 
 El sistema recibe un objetivo y unos límites. Una sesión de agente supervisor propone un plan y decide sobre hallazgos. El controlador valida esas decisiones, mantiene el estado y ejecuta efectos externos. Herdr proporciona las sesiones visibles y los worktrees. Mailer entrega avisos y preguntas. Git y las herramientas del proyecto proporcionan la evidencia de los cambios.
