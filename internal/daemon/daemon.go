@@ -56,6 +56,8 @@ type Server struct {
 	brokerState   string
 	broker        *transport.Bridge
 	subscriptions map[string]*nats.Subscription
+	runtimeMu     sync.Mutex
+	peers         map[string]*runtimePeer
 }
 
 func (s *Server) Serve(ctx context.Context, dir string) error {
@@ -159,6 +161,10 @@ func (s *Server) handle(parent context.Context, conn net.Conn) {
 		return
 	}
 	_ = conn.SetReadDeadline(time.Time{})
+	if r.Op == "runtime-connect" {
+		s.runtimeConnect(ctx, conn, dec, r)
+		return
+	}
 	// EOF or any further data cancels a streaming request; only one request per connection.
 	go func() { var b [1]byte; _, _ = conn.Read(b[:]); cancel() }()
 	if r.Op == "events" {
@@ -187,6 +193,9 @@ func (s *Server) dispatch(ctx context.Context, r Request) (any, error) {
 		s.route.Lock()
 		defer s.route.Unlock()
 		session, token, err := s.Store.Register(ctx, r.Agent, r.Runtime, r.Location)
+		if err == nil {
+			s.disconnectRuntime(r.Agent)
+		}
 		return map[string]any{"session": session, "token": token}, err
 	}
 	session, err := s.Store.Authenticate(ctx, r.Token)
@@ -352,7 +361,11 @@ func (s *Server) deliver(ctx context.Context, j store.Job) error {
 	if !time.Now().Before(j.Message.ExpiresAt) {
 		return finish("expired", nil)
 	}
-	err = s.Adapter.Deliver(ctx, session, j.Message)
+	if session.Runtime == "pi" || session.Runtime == "claude" {
+		err = s.deliverRuntime(ctx, session, j.Message)
+	} else {
+		err = s.Adapter.Deliver(ctx, session, j.Message)
+	}
 	if err == nil {
 		return finish("accepted", nil)
 	}
@@ -361,6 +374,12 @@ func (s *Server) deliver(ctx context.Context, j store.Job) error {
 	}
 	if errors.Is(err, delivery.ErrAmbiguous) {
 		return finish("ambiguous", err)
+	}
+	if errors.Is(err, errChannelWritten) {
+		return finish("channel_written", nil)
+	}
+	if errors.Is(err, errRuntimeOffline) {
+		return finish("pending", err)
 	}
 	if j.Attempts >= 7 {
 		return finish("failed", err)

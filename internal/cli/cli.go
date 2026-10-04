@@ -105,7 +105,7 @@ func New(out, errOut io.Writer) *cobra.Command {
 		return e
 	}}
 	register.Flags().StringVar(&runtime, "runtime", "none", "codex, pi, claude, or none")
-	register.Flags().StringVar(&location, "location", "", "exact Codex session UUID; metadata for other runtimes")
+	register.Flags().StringVar(&location, "location", "", "exact runtime session UUID (required except for none)")
 	register.Flags().StringVar(&output, "output", "", "new private token file; fails if it already exists")
 	root.AddCommand(register)
 	var nc transport.Config

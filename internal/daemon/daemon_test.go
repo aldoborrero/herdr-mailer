@@ -333,7 +333,7 @@ func TestNativeRetryLimitAndUnsupportedRuntime(t *testing.T) {
 	if e != nil || status["native:failed"] != 1 || fake.calls.Load() != 8 {
 		t.Fatal(status, fake.calls.Load(), e)
 	}
-	if _, _, e = s.Store.Register(ctx, "pi-agent", "pi", ""); e != nil {
+	if _, _, e = s.Store.Register(ctx, "pi-agent", "none", ""); e != nil {
 		t.Fatal(e)
 	}
 	if _, e = s.Store.Send(ctx, a, "pi-agent", "unsupported", "send", "", time.Hour, false); e != nil {

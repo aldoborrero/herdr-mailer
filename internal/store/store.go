@@ -108,8 +108,8 @@ func (s *Store) Register(ctx context.Context, agent, runtime, location string) (
 	if runtime != "codex" && runtime != "pi" && runtime != "claude" && runtime != "none" {
 		return r, "", fmt.Errorf("invalid runtime")
 	}
-	if runtime == "codex" && !record.ValidUUID(location) {
-		return r, "", fmt.Errorf("codex location must be exact session UUID")
+	if runtime != "none" && !record.ValidUUID(location) {
+		return r, "", fmt.Errorf("runtime location must be exact session UUID")
 	}
 	token := identity.Token()
 	tx, err := s.DB.BeginTx(ctx, nil)

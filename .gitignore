@@ -4,3 +4,4 @@ result-*
 .envrc.local
 .go/
 /herdr-mailer
+node_modules/
