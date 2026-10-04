@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="448" viewBox="0 0 1280 448" role="img" aria-labelledby="title desc">
+  <title id="title">herdr-mailer — Durable mail for agents at work.</title>
+  <desc id="desc">A cream and forest-green postal illustration: messages travel along a dotted route into a persistent inbox. Local first, persistent inbox, native delivery.</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#183e38" opacity="0.09"/>
+    </pattern>
+    <pattern id="edge" width="40" height="12" patternUnits="userSpaceOnUse">
+      <path d="M0 0h20v12H0z" fill="#245b50"/>
+      <path d="M20 0h20v12H20z" fill="#df7654"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="448" rx="24" fill="#f5f1e8"/>
+  <rect x="756" y="24" width="500" height="400" rx="16" fill="url(#grid)"/>
+  <path d="M48 87H1232" stroke="#183e38" stroke-opacity="0.18"/>
+  <g fill="#244d43" font-family="'DejaVu Sans Mono', monospace" font-size="13" letter-spacing="2">
+    <text x="48" y="57">TOOLS FOR COOPERATING AGENTS</text>
+    <text x="1232" y="57" text-anchor="end">LOCAL DISPATCH / 001</text>
+  </g>
+  <g font-family="'DejaVu Sans', sans-serif">
+    <text x="45" y="194" fill="#183e38" font-size="78" font-weight="700" letter-spacing="-4">herdr-mailer</text>
+    <text x="49" y="246" fill="#244d43" font-size="29" letter-spacing="-0.6">Durable mail.</text>
+    <text x="49" y="285" fill="#244d43" font-size="29" letter-spacing="-0.6">For agents at work.</text>
+  </g>
+  <g font-family="'DejaVu Sans Mono', monospace" font-size="11" letter-spacing="1.2">
+    <rect x="48" y="345" width="119" height="32" rx="16" fill="#183e38"/>
+    <text x="107.5" y="365" text-anchor="middle" fill="#f5f1e8">LOCAL FIRST</text>
+    <rect x="177" y="345" width="169" height="32" rx="16" fill="none" stroke="#244d43" stroke-opacity="0.45"/>
+    <text x="261.5" y="365" text-anchor="middle" fill="#244d43">PERSISTENT INBOX</text>
+    <rect x="356" y="345" width="165" height="32" rx="16" fill="none" stroke="#244d43" stroke-opacity="0.45"/>
+    <text x="438.5" y="365" text-anchor="middle" fill="#244d43">NATIVE DELIVERY</text>
+  </g>
+  <path d="M756 217h66q20 0 20 20v72q0 20 20 20h225q23 0 23-23v-82" fill="none" stroke="#df7654" stroke-width="3" stroke-dasharray="4 9" stroke-linecap="round"/>
+  <circle cx="756" cy="217" r="7" fill="#df7654"/>
+  <g transform="rotate(-9 935 196)">
+    <rect x="825" y="126" width="242" height="158" rx="11" fill="#183e38" opacity="0.09" transform="translate(8 10)"/>
+    <rect x="825" y="126" width="242" height="158" rx="11" fill="#fffdf6" stroke="#244d43" stroke-width="2"/>
+    <path d="M827 132l111 80q8 6 16 0l111-80" fill="#e7ede1" stroke="#244d43" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M829 280l78-68m156 68l-78-68" fill="none" stroke="#244d43" stroke-width="2"/>
+    <circle cx="946" cy="205" r="18" fill="#df7654"/>
+    <path d="M938 205l5 5 11-12" fill="none" stroke="#fffdf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g>
+    <rect x="1044" y="266" width="126" height="99" rx="12" fill="#183e38"/>
+    <path d="M1061 310h21l8 12h36l8-12h20v33h-93z" fill="#88aa90"/>
+    <path d="M1063 309l10-22h69l10 22" fill="none" stroke="#f5f1e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M1092 299h31m-25-9h19" stroke="#f5f1e8" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="1165" cy="271" r="14" fill="#df7654" stroke="#f5f1e8" stroke-width="4"/>
+  </g>
+  <g transform="rotate(12 1160 156)" fill="none" stroke="#244d43" opacity="0.7">
+    <circle cx="1160" cy="156" r="42" stroke-width="1.5"/>
+    <circle cx="1160" cy="156" r="35" stroke-width="1"/>
+    <path d="M1110 146h-15m15 10h-25m25 10h-15" stroke-width="1.5"/>
+    <g fill="#244d43" stroke="none" text-anchor="middle" font-family="'DejaVu Sans Mono', monospace" font-size="10" letter-spacing="1">
+      <text x="1160" y="150">STORED</text>
+      <text x="1160" y="168">LOCALLY</text>
+    </g>
+  </g>
+  <rect x="48" y="410" width="1184" height="4" rx="2" fill="url(#edge)"/>
+</svg>
