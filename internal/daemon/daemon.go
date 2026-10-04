@@ -16,11 +16,16 @@ import (
 
 	"github.com/aldoborrero/herdr-mailer/internal/delivery"
 	"github.com/aldoborrero/herdr-mailer/internal/identity"
+	"github.com/aldoborrero/herdr-mailer/internal/record"
 	"github.com/aldoborrero/herdr-mailer/internal/store"
 	"github.com/aldoborrero/herdr-mailer/internal/transport"
 	"github.com/nats-io/nats.go"
 	"golang.org/x/sys/unix"
 )
+
+// JSON can encode each body byte as a six-byte Unicode escape. Reserve another
+// 16 KiB for metadata and whitespace, independently of the decoded body limit.
+const maxRequestBytes = 6*record.MaxBodyBytes + 16*1024
 
 type Request struct {
 	Op        string `json:"op"`
@@ -136,11 +141,21 @@ func (s *Server) handle(parent context.Context, conn net.Conn) {
 	ctx, cancel := context.WithCancel(parent)
 	defer cancel()
 	_ = conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-	dec := json.NewDecoder(io.LimitReader(conn, 128*1024))
+	// One extra byte distinguishes an exact-limit document from an oversized
+	// complete document without waiting for EOF on this request/response socket.
+	limited := &io.LimitedReader{R: conn, N: maxRequestBytes + 1}
+	dec := json.NewDecoder(limited)
 	dec.DisallowUnknownFields()
 	var r Request
 	if err := dec.Decode(&r); err != nil {
+		if limited.N == 0 {
+			err = fmt.Errorf("request document exceeds %d bytes", maxRequestBytes)
+		}
 		s.write(conn, Response{Error: err.Error()})
+		return
+	}
+	if dec.InputOffset() > maxRequestBytes {
+		s.write(conn, Response{Error: fmt.Sprintf("request document exceeds %d bytes", maxRequestBytes)})
 		return
 	}
 	_ = conn.SetReadDeadline(time.Time{})

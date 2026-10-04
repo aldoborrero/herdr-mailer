@@ -95,3 +95,9 @@ Additional regressions:
 - `TestResolutionSurvivesRestartAndUpgrade`, `TestUpgradeRejectsConflictingLegacyReplies` and `TestResolutionsScopedToAskOrigin`: upgrade/restart durability, preserved evidence on inconsistent legacy history, and independent asks sharing a UUID across origins.
 
 These guarantees concern durable ask resolution in SQLite. Native queue acceptance and model effects retain the separately documented ambiguity and duplicate limits.
+
+## Escaped request body review
+
+The coordinator's `TestCoordinatorAcceptMaxEscapedBody` reproduced `unexpected EOF` with 65,536 newline bytes under the old 128 KiB document cap. It now passes with the 409,600-byte cap. `TestRequestBodyByteLimit` additionally checks maximum six-byte escapes, multibyte UTF-8 preservation, and rejection of oversized decoded bodies. `TestRequestDocumentLimit` checks acceptance at the exact document boundary, rejection one byte beyond it, and abusive metadata/leading whitespace. Rejected requests leave no messages, jobs, events or resolutions.
+
+All four coordinator reproductions, the complete Go test/race/vet suite, formatting, Nix package build and host flake checks passed after this correction. These are local validation results; coordinator review and integration approval remain separate.

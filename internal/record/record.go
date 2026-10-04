@@ -9,6 +9,7 @@ import (
 
 const MessageType = "com.example.herdr.messageV1"
 const SessionType = "com.example.herdr.sessionV1"
+const MaxBodyBytes = 65536
 
 type Message struct {
 	Type             string    `json:"$type"`
@@ -38,7 +39,7 @@ type Session struct {
 }
 
 func (m Message) Validate() error {
-	if m.Type != MessageType || !ValidUUID(m.ID) || !ValidUUID(m.Session) || m.Owner == "" || !ValidAgent(m.Author) || !ValidAgent(m.Recipient) || m.Epoch < 1 || m.Body == "" || len(m.Body) > 65536 || !utf8.ValidString(m.Body) || m.CreatedAt.IsZero() || !m.ExpiresAt.After(m.CreatedAt) {
+	if m.Type != MessageType || !ValidUUID(m.ID) || !ValidUUID(m.Session) || m.Owner == "" || !ValidAgent(m.Author) || !ValidAgent(m.Recipient) || m.Epoch < 1 || m.Body == "" || len(m.Body) > MaxBodyBytes || !utf8.ValidString(m.Body) || m.CreatedAt.IsZero() || !m.ExpiresAt.After(m.CreatedAt) {
 		return fmt.Errorf("invalid message record")
 	}
 	if m.Kind != "send" && m.Kind != "ask" && m.Kind != "reply" {
