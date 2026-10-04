@@ -4,4 +4,3 @@ result-*
 .envrc.local
 .go/
 /herdr-mailer
-*.test

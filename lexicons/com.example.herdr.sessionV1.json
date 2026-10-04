@@ -1,0 +1,59 @@
+{
+  "lexicon": 1,
+  "id": "com.example.herdr.sessionV1",
+  "description": "Provisional local runtime session binding v1; no credential or owner key material.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "record": {
+        "type": "object",
+        "required": [
+          "owner",
+          "agent",
+          "id",
+          "epoch",
+          "runtime",
+          "location",
+          "createdAt"
+        ],
+        "properties": {
+          "owner": {
+            "type": "string",
+            "format": "did"
+          },
+          "agent": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "id": {
+            "type": "string",
+            "maxLength": 36
+          },
+          "epoch": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "runtime": {
+            "type": "string",
+            "enum": [
+              "codex",
+              "pi",
+              "claude",
+              "none"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "description": "Exact Codex thread UUID or opaque metadata for unsupported runtimes; never a pane identity."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

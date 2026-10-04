@@ -1,0 +1,81 @@
+{
+  "lexicon": 1,
+  "id": "com.example.herdr.messageV1",
+  "description": "Provisional local Herdr message record v1. This namespace is not claimed or resolved.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "record": {
+        "type": "object",
+        "required": [
+          "id",
+          "owner",
+          "author",
+          "recipient",
+          "session",
+          "epoch",
+          "createdAt",
+          "expiresAt",
+          "kind",
+          "body"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 36,
+            "description": "Stable UUID; also the broker deduplication ID."
+          },
+          "owner": {
+            "type": "string",
+            "format": "did"
+          },
+          "author": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "recipient": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "session": {
+            "type": "string",
+            "maxLength": 36
+          },
+          "epoch": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "send",
+              "ask",
+              "reply"
+            ]
+          },
+          "correlation": {
+            "type": "string",
+            "maxLength": 36,
+            "description": "Required for reply: UUID of the original ask."
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 65536
+          }
+        }
+      }
+    }
+  }
+}
