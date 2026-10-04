@@ -1,0 +1,31 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	herdr "github.com/cyperx84/herdr-api"
+	"os"
+	"time"
+)
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	c, err := herdr.Open()
+	if err != nil {
+		panic(err)
+	}
+	if err = c.CheckProtocol(ctx); err != nil {
+		panic(err)
+	}
+	agents, err := c.AgentList(ctx)
+	if err != nil {
+		panic(err)
+	}
+	stream, err := c.Subscribe(ctx, herdr.Subscription{Type: "pane.agent_status_changed", PaneID: os.Getenv("HERDR_PANE_ID")})
+	if err != nil {
+		panic(err)
+	}
+	defer stream.Close()
+	json.NewEncoder(os.Stdout).Encode(map[string]any{"probe": "Go herdr-api protocol+typed agent list+subscription", "ok": true, "agents": len(agents)})
+}

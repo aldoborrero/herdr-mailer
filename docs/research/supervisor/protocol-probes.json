@@ -1,0 +1,74 @@
+{
+  "tests": {
+    "herdr_live_protocol": {
+      "pass": true,
+      "response": {
+        "id": "study-ping",
+        "result": {
+          "type": "pong",
+          "version": "0.9.1",
+          "protocol": 22,
+          "capabilities": {
+            "live_handoff": true,
+            "detached_server_daemon": true,
+            "endpoint_protocol_generation": 1,
+            "surface_interest": true,
+            "health_check": true
+          }
+        }
+      }
+    },
+    "herdr_one_request_per_connection": {
+      "pass": true
+    },
+    "subscribe_pane.created": {
+      "pass": true
+    },
+    "subscribe_pane.agent_status_changed": {
+      "pass": true
+    },
+    "send_retry_is_not_idempotent_today": {
+      "pass": true,
+      "distinct_messages": 2
+    },
+    "recipient_events_exist": {
+      "pass": true
+    },
+    "cursor_replay_has_no_previous_events": {
+      "pass": true
+    },
+    "cursor_sees_later_event": {
+      "pass": true
+    },
+    "events_and_credentials_survive_daemon_restart": {
+      "pass": true
+    },
+    "register_is_rotation_not_resume": {
+      "pass": true
+    },
+    "rotation_revokes_old_token": {
+      "pass": true
+    },
+    "envelope_pins_recipient_session": {
+      "pass": true
+    },
+    "git_stale_base_cas_rejected": {
+      "pass": true
+    },
+    "git_owned_integration_ref_cas_succeeds": {
+      "pass": true
+    }
+  },
+  "mailer_binary": "/nix/store/0b23wbxqgfr4vi93jipzyflz3kd0ffzb-herdr-mailer-0.1.0/bin/herdr-mailer",
+  "herdr_event_observations": [
+    {
+      "subscription": "pane.created",
+      "frames": []
+    },
+    {
+      "subscription": "pane.agent_status_changed",
+      "frames": []
+    }
+  ],
+  "scope": "No agents spawned; read-only live Herdr; isolated mailer runtime=none and disposable Git repository. No native model completion tested."
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "repo": "StructuPath/herdr-swarm",
+    "sha": "f750bc7d61f99d857e2276c5493fbe91254c9e7f"
+  },
+  {
+    "repo": "StructuPath/herdr-conductor",
+    "sha": "850e0786f4d0204f15634931da96f58314cc9553"
+  },
+  {
+    "repo": "cyperx84/herdr-loop",
+    "sha": "af24ceef312f856ba1b099d4ae0ba42c04a88b9f"
+  },
+  {
+    "repo": "cyperx84/herdr-api",
+    "sha": "65cc5f7c10515ad5be2be55f9384cb7bd7ae970f"
+  },
+  {
+    "repo": "husniadil/herdr-dispatch",
+    "sha": "852f94150a5159b261ca0e932aa126fb1f24b7ff"
+  },
+  {
+    "repo": "sean1588/herdr-orchestrator",
+    "sha": "50c2b922597ad99bc966656c8cfedf08113fb9f6"
+  },
+  {
+    "repo": "Kampe/Herdforge",
+    "sha": "fb51be3b0886c3ad9048b96d69e3d5c9aca28f49"
+  },
+  {
+    "repo": "aorumbayev/herdr-workflows",
+    "sha": "140de99b7fa43b10dc2a294e0667c62fa2f763dd"
+  },
+  {
+    "repo": "Newt6611/herdr-plugin-rust",
+    "sha": "4946df04a41a68f994fe10e0667f161ae815710e"
+  },
+  {
+    "repo": "smota/meshloop",
+    "sha": "c2cc68c0193da285735254df0914c604d36b8add"
+  }
+]

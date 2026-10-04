@@ -1,0 +1,35 @@
+{
+  "scope": "Read-only queries against existing Herdr 0.9.1. No event payload or model processing tested.",
+  "rustc": "1.98.1",
+  "cargo": "1.98.0",
+  "go": "1.26.7",
+  "rust": {
+    "herdr-sdk": "0.0.1",
+    "herdr-plugin": "4946df04a41a68f994fe10e0667f161ae815710e",
+    "build": "PASS",
+    "ping_protocol": 22,
+    "typed_sdk_pane_list": "PASS",
+    "typed_framework_cli_pane_list": "PASS"
+  },
+  "go_client": {
+    "revision": "65cc5f7c10515ad5be2be55f9384cb7bd7ae970f",
+    "protocol_check": "PASS",
+    "typed_agent_list": "PASS",
+    "scoped_subscription_ack": "PASS"
+  },
+  "exported_schema_sha256": "226d4ecbd128d2e6bc84e4c8ddcec21ba9c7e51a0aafffcf087111ead3f1fa9a",
+  "mailer_head": "96efe7bb1dd1f18a25e2420e723d5ed7a75a137b",
+  "lanes_head": "d0783e566a4550c9084e33eb7b56333537146967",
+  "native_worktree_list": {
+    "main_seen": true,
+    "worker_branch": "feat/native-runtimes",
+    "worker_open_in_herdr": true
+  },
+  "limitations": [
+    "No live model calls",
+    "No native Herdr create/remove mutation tested in this study",
+    "No supervisor engine implemented",
+    "No new Nix package built",
+    "No performance benchmark"
+  ]
+}
