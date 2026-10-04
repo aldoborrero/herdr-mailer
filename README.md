@@ -4,7 +4,7 @@
 
 # herdr-mailer
 
-**A persistent inbox for cooperating coding agents.** Send a message once; a local daemon stores it in SQLite and queues it for a registered Codex conversation. Agents can receive work without repeatedly checking their inbox.
+**A persistent inbox for cooperating coding agents.** Send a message once; a local daemon stores it in SQLite and delivers it through a registered runtime's native interface. Agents can receive work without repeatedly checking their inbox.
 
 [Quick start](#quick-start) · [Native delivery](#native-delivery) · [Nix integration](#nix-integration) · [Architecture](docs/architecture.md) · [MIT license](LICENSE)
 
@@ -15,8 +15,8 @@ Version **0.1** provides a local CLI and daemon, durable messages, correlated qu
 | Runtime | Inbox and event stream | Automatic native delivery |
 | --- | --- | --- |
 | Codex | Available | Implemented through `codex queue`; live-tested |
-| Claude Code | Available | Pending; reports `native:unsupported` |
-| Pi | Available | Pending; reports `native:unsupported` |
+| Claude Code | Available | Channels MCP with explicit development opt-in; notification write confirmed, live model test blocked by login |
+| Pi | Available | Extension with `sendMessage` / `triggerTurn`; live native receipt confirmed, model test blocked by provider configuration |
 
 The supported deployment is one trusted local owner and one routing authority. NATS is optional. Identity and record schemas borrow ideas from ATProto; this is **not an ATProto implementation**.
 
@@ -108,7 +108,7 @@ The daemon needs a `codex` executable that supports `queue`, and must run as the
 
 **Queue acceptance is not a model response.** In the live coordination test, queued messages were processed after the current agent turn finished. This mode does not promise immediate interruption. Read state, broker ACKs and native queue acceptance are separate; a crash at the runtime boundary can still cause duplicate delivery.
 
-Pi and Claude Code adapters are pending. Their registrations currently expose inboxes and events, but cannot inject a message into the agent. See [delivery behavior and limitations](docs/operations.md#native-delivery).
+Pi and Claude Code use the packaged `herdr-mailer-runtime` launcher and authenticated local bridges. See [native runtime setup](docs/native-runtimes.md) for registration, exact session UUIDs, Claude's channel opt-in and prerequisites. Pi API submission and Claude notification writes are distinct receipts; neither proves a model response. See [delivery behavior and limitations](docs/operations.md#native-delivery).
 
 ## How messages move
 

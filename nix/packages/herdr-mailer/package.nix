@@ -3,6 +3,7 @@
   src,
   buildGoModule,
   nats-server,
+  runtimes,
 }:
 buildGoModule {
   pname = "herdr-mailer";
@@ -17,6 +18,12 @@ buildGoModule {
     go test -race ./...
     go vet ./...
     runHook postCheck
+  '';
+  postInstall = ''
+    ln -s ${runtimes}/bin/herdr-mailer-runtime $out/bin/herdr-mailer-runtime
+    mkdir -p $out/share/herdr-mailer
+    ln -s ${runtimes}/lib/herdr-mailer/runtimes $out/share/herdr-mailer/runtimes
+    cp docs/native-runtimes.md $out/share/herdr-mailer/
   '';
   meta = {
     description = "Durable local inter-agent messaging for Herdr";

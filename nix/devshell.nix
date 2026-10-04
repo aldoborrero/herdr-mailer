@@ -9,6 +9,8 @@ perSystem.devshell.mkShell {
     gotools
     # Mandatory private JetStream integration tests.
     nats-server
+    # Native bridge development and official SDK protocol tests.
+    nodejs
   ];
   env = [
     {

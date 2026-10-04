@@ -46,7 +46,7 @@ Blueprint exposes the package, devshell, formatter and formatter check; its addi
 | Real JetStream offline recipient, safe per-subject retention, dedup, disconnect/reconnect and outbox replay | `internal/transport`, `internal/daemon` |
 | No ACK on persistence failure, redelivery then ACK; short fetch deadline does not cancel disk persistence | `internal/transport` |
 
-Broker integration tests fail rather than skip when `nats-server` is unavailable. Every server binds `127.0.0.1` on a private temporary port with isolated storage. Model-side effects are mocked in the automated suite. JWT/TLS account policy, remote broker topology, Home Manager activation, Pi and Claude delivery have not been live-tested.
+Broker integration tests fail rather than skip when `nats-server` is unavailable. Every server binds `127.0.0.1` on a private temporary port with isolated storage. Model-side effects are mocked in the automated suite. JWT/TLS account policy, remote broker topology and Home Manager activation have not been live-tested. Pi and Claude follow-up evidence is recorded below.
 
 ## Native live interaction
 
@@ -61,7 +61,7 @@ This proves successful queue-command acceptance through the real adapter. It doe
 
 ## Current limitations
 
-One trusted same-UID owner domain and one local routing authority; no cross-owner federation, PDS, public identity resolution or multi-host identity provisioning. Durable storage has no automatic pruning, quotas, schema migration command or terminal-job replay command. Broker poison records need operator investigation. Supported native delivery is Codex only; Pi/Claude are explicit unsupported adapters. Session credential isolation depends on the documented OS trust boundary. Crashes between native acceptance and receipt persistence may duplicate delivery.
+One trusted same-UID owner domain and one local routing authority; no cross-owner federation, PDS, public identity resolution or multi-host identity provisioning. Durable storage has no automatic pruning, quotas, schema migration command or terminal-job replay command. Broker poison records need operator investigation. Native bridges support Pi and Claude in addition to Codex, subject to the prerequisites below. Session credential isolation depends on the documented OS trust boundary. Codex crash windows may duplicate delivery; bridge intent/outcome windows are retained as ambiguous without automatic reinjection.
 
 The NixOS service module was also evaluated with `nixpkgs.lib.nixosSystem` against a synthetic user and `/tmp/herdr-mailer-module-eval` state path. The resulting unit selects the mailer executable, the explicit user, umask 0077 and restart-on-failure; no host configuration was activated.
 
@@ -101,3 +101,32 @@ These guarantees concern durable ask resolution in SQLite. Native queue acceptan
 The coordinator's `TestCoordinatorAcceptMaxEscapedBody` reproduced `unexpected EOF` with 65,536 newline bytes under the old 128 KiB document cap. It now passes with the 409,600-byte cap. `TestRequestBodyByteLimit` additionally checks maximum six-byte escapes, multibyte UTF-8 preservation, and rejection of oversized decoded bodies. `TestRequestDocumentLimit` checks acceptance at the exact document boundary, rejection one byte beyond it, and abusive metadata/leading whitespace. Rejected requests leave no messages, jobs, events or resolutions.
 
 All four coordinator reproductions, the complete Go test/race/vet suite, formatting, Nix package build and host flake checks passed after this correction. These are local validation results; coordinator review and integration approval remain separate.
+
+## Native Claude Code and Pi follow-up
+
+Base revision: `87c3b5b`; implementation branch: `feat/native-runtimes`. The README support table is updated and its SVG banner is unchanged. Worker session UUID remains `01a1074c-41e3-7210-99b4-319fe85549c8`.
+
+Automated evidence:
+
+| Contract | Coverage |
+| --- | --- |
+| Token + runtime + exact location, one connection per session | `TestNativeRuntimeAuthenticatedDeliveryAndReceipts` |
+| Lost connection retains job and replays with a fresh attempt | `TestRuntimeDisconnectRetainsAndReconnectReplays` |
+| Offline bridge does not exhaust Codex's retry limit; rotation makes old destination stale | `TestRuntimeOfflineNeverExhaustsAndRotationIsStale` |
+| Session registration waits for an in-flight injection lease, including disconnect | `TestRuntimeDisconnectFencesRegistrationAndOldAddress` |
+| Wrong attempt cannot acknowledge a job | `TestRuntimeWrongAttemptCannotAcknowledge` |
+| Correct channel capability, initialization ordering and notification schema | Official MCP SDK client/server over linked transports in `runtimes/test/bridges.test.js` |
+| Pi extension loading, `triggerTurn`, follow-up delivery, shutdown and wrong-session refusal | Official Pi 0.87.1 extension loader, with mocked runtime action and context |
+| Persistent replay, content collision and crash ambiguity | Receipt ledger reopened between deliveries; real socket disconnect/reconnect tests |
+| Bounded frames, UTF-8 body limits and final lease check | Validation and full 65,536-byte six-character-escaped body over a real socket |
+| Explicit Claude channel opt-in and no token or permission bypass in argv | Launcher tests with isolated fake executables |
+
+The Go suite includes all previous coordinator reply/escaped-body regressions and real private NATS integration. Bridge tests use temporary private sockets/receipt directories and never call a model. The Nix package runs Go tests/race/vet and the JavaScript SDK tests. `npmDepsFetcherVersion = 2` accommodates Pi's published shrinkwrap; five omitted nested package integrities are filled from their exact registry versions in the committed lockfile. Runtime production closure omits the Pi SDK test dependency: Pi is supplied by the user's own runtime installation.
+
+Live checks used only **new isolated test sessions**, a temporary daemon, new credentials and temporary Claude/Pi configuration. No existing session, global settings or host service was changed. Both processes and the private daemon were stopped afterward.
+
+- Evidence directory: `/tmp/herdr-mailer-runtime-live.2RZU8r`.
+- Pi 0.87.1: runtime UUID `222ed1d0-f1f5-490b-80ac-b03218fddc8f`; mailer message `facf790d-3557-4ad7-b93a-c011e46d027d`. The real RPC output contains `message_end` with `role: custom` and that exact message ID/body. SQLite reports `native:accepted`. A subsequent assistant event reports `Provider is not configured: anthropic`, so no successful model response is claimed.
+- Claude Code 2.1.284: runtime UUID `cef8bb39-4392-41c6-b02e-fcee8f9c25d2`; mailer message `2f2d1bb3-3a9d-4f35-b434-6ac5e891aa8f`. The real Claude initialization event reports the same session UUID and the `herdr-mailer` MCP server as connected. SQLite reports `native:channel_written`. The isolated runtime reports `Not logged in · Please run /login`, `terminal_reason: api_error`, zero input/output tokens and zero cost. Neither channel consumption nor a model response is claimed.
+
+For these checks Pi ran in RPC mode with tools and resource discovery disabled, and Claude ran in print/stream-JSON mode with a strict MCP configuration, empty setting sources and tools disabled. Claude's development-channel flag was explicitly supplied. Pi's API submission and Claude's transport write remain different evidence from a model response, independently of login/model availability.

@@ -3,6 +3,7 @@ default:
 
 test *args:
     go test {{ args }} ./...
+    npm --prefix runtimes test
 
 lint:
     go vet ./...

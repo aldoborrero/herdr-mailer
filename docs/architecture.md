@@ -7,7 +7,7 @@
 | Owner | Local Ed25519 did:key | State bootstrap; back up privately |
 | Logical agent | Owner DID plus local agent name | Stable across registrations |
 | Session | UUID and monotonically increasing epoch | One registration |
-| Runtime location | Exact Codex thread UUID | Explicit owner registration |
+| Runtime location | Exact Codex, Pi or Claude conversation UUID | Explicit owner registration |
 | Herdr pane | Not used as an identity or route | UI detail outside the protocol |
 
 `init` uses Go's standard Ed25519 key generator. The DID encodes the public key with the standard `ed 01` multicodec varint and base58btc multibase. The private key and administrator token remain in mode-0600 `owner.json`; worker files contain only random 256-bit opaque session tokens. SQLite stores hashes of worker tokens. Public session records contain no secrets.
@@ -38,4 +38,6 @@ Events have durable increasing cursors and are queried with the authenticated re
 
 The Unix protocol accepts one bounded JSON request per connection; unknown fields are rejected. The document limit is 409,600 bytes (6 × 65,536 body bytes plus 16 KiB for metadata and whitespace), allowing even six-byte JSON escapes for every body byte. The decoded body still has its independent 65,536-byte UTF-8 limit. Oversized documents are rejected before dispatch, with bounded reads and without requiring the client to close its socket. Initial reads and writes have deadlines. Shutdown closes all connections, including clients that never complete a JSON document, and cancels workers. The client closes its socket when its context is cancelled. A daemon lock prevents a second process from replacing a live socket.
 
-`native:accepted`, `broker:published`, unread/read and model processing are separate facts. Only the first three are observable here. Message IDs are included in native text so a receiving agent can recognize retries; the runtime has no application-provided exactly-once idempotency contract.
+`native:accepted`, `native:channel_written`, `broker:published`, unread/read and model processing are separate facts. Model processing is not inferred from any transport status. Message IDs are included in native text so a receiving agent can recognize retries; runtimes have no application-provided exactly-once idempotency contract.
+
+Pi and Claude use a dedicated authenticated bidirectional connection after the bounded `runtime-connect` handshake. Only pending native jobs produce delivery frames; inbox/read/status events cannot loop back into injection. An attempt UUID and bounded injection lease fence acknowledgements and session rotation. Reconnection preserves jobs and a private fsynced bridge receipt ledger avoids known duplicate submissions. Ambiguous crash windows fail closed with the inbox intact. See [native runtimes](native-runtimes.md) for the launcher, lifecycle and precise receipt semantics.

@@ -12,7 +12,7 @@ A crash after queue acceptance and before recording success can replay delivery 
 
 `read` marks a record read and does not cancel a pending native job. `status` reports only jobs for the caller's own inbox. Run `doctor` with that caller's token. Daemon logs report processing errors without logging bodies or tokens.
 
-Pi can later implement the delivery interface or host an extension consuming `events --follow`. No Pi extension is shipped or claimed as native delivery. Claude Channels requires an explicit opt-in and separately reviewed integration; it is a next milestone. No stub reports successful delivery.
+Pi and Claude Code have packaged native bridges: a Pi lifecycle extension and a Claude Channels MCP server with explicit development-channel opt-in. See [native runtime setup and receipts](native-runtimes.md). Bridge disconnects retain pending jobs until reconnect or expiry; a durable bridge receipt suppresses replay. An uncertain injection becomes `ambiguous`. Pi `accepted` means public API submission; Claude `channel_written` means only a notification transport write, since Channels has no delivery ACK. Neither status proves a model response.
 
 ## JetStream boundary and retention
 

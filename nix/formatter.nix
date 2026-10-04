@@ -30,6 +30,8 @@ let
       jsonfmt.enable = true;
       mdformat.enable = true;
       just.enable = true;
+      prettier.enable = true;
+      prettier.includes = [ "*.js" ];
     };
     settings.excludes = [
       "AGENTS.md"
@@ -37,6 +39,7 @@ let
       ".go/**"
       ".agents/**"
       ".codex/**"
+      "**/node_modules/**"
       "CLAUDE.md"
     ];
   };

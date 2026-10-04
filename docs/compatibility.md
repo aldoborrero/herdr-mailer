@@ -21,4 +21,4 @@ A second `reply` command creates a different reply ID and fails once the ask has
 
 `--ttl` sets native and broker-publication expiry, from a positive duration through 720 hours (default 24h). Expired records remain readable for audit but are never injected. `events --cursor N` resumes after N; persist the last successfully handled cursor. Non-follow events finish with `{"data":{"done":true}}` at the socket protocol level (CLI prints the data object).
 
-The owner must `init`, start `daemon`, then `register` each worker. Use `--runtime codex --location EXACT_THREAD_UUID` for automatic native delivery. `none`, `pi` and `claude` are valid registration metadata but produce explicit `native:unsupported`; their inbox and event stream remain usable.
+The owner must `init`, start `daemon`, then `register` each worker. Use `--runtime codex --location EXACT_THREAD_UUID` for Codex. Pi and Claude also require an exact runtime session UUID and their [packaged native bridge](native-runtimes.md); disconnected bridges remain pending. `none` exposes an inbox/events without injection and produces `native:unsupported`.
