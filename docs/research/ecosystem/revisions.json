@@ -1,0 +1,181 @@
+{
+  "inspected_on": "2026-10-04",
+  "method": "Shallow public clones pinned to HEAD; read-only research. Does not imply released versions, passing tests, runtime compatibility or a full code audit.",
+  "repositories": [
+    {
+      "repository": "kunchenguid/gnhf",
+      "revision": "f2ad5baff8de453bd4222e3d6ce53b43522b1fa2",
+      "url": "https://github.com/kunchenguid/gnhf/tree/f2ad5baff8de453bd4222e3d6ce53b43522b1fa2",
+      "commit_date": "2026-10-03",
+      "inspection": "selected source and documentation; no execution",
+      "files_consulted": [
+        "README.md",
+        "src/core/agents/factory.ts",
+        "src/core/agents/codex.ts",
+        "src/core/agents/claude.ts",
+        "src/core/agents/acp.ts",
+        "src/core/orchestrator.ts",
+        "src/core/git.ts",
+        "src/templates/iteration-prompt.ts"
+      ]
+    },
+    {
+      "repository": "eliasstravik/herdr-projects",
+      "revision": "4e4548c3c43888e6be1c96906215998f07dc63f0",
+      "url": "https://github.com/eliasstravik/herdr-projects/tree/4e4548c3c43888e6be1c96906215998f07dc63f0",
+      "commit_date": "2026-09-28",
+      "inspection": "selected source and documentation; no execution",
+      "files_consulted": [
+        "README.md",
+        "Cargo.toml",
+        "docs/operations.md",
+        "src/project.rs",
+        "src/thread.rs",
+        "src/inbox.rs",
+        "src/steps.rs",
+        "src/ticker.rs",
+        "src/herdr.rs"
+      ]
+    },
+    {
+      "repository": "osolmaz/pi-workflows",
+      "revision": "7937df1a6b4f12bfce2e7ada2842d5556dd95f72",
+      "url": "https://github.com/osolmaz/pi-workflows/tree/7937df1a6b4f12bfce2e7ada2842d5556dd95f72",
+      "commit_date": "2026-09-30",
+      "inspection": "selected source and documentation; no execution",
+      "files_consulted": [
+        "README.md",
+        "package.json",
+        "docs/SQLITE_STATE.md",
+        "docs/RESOURCE_MANAGERS.md",
+        "src/resource-managers/effects.ts",
+        "src/resource-managers/sqlite.ts"
+      ]
+    },
+    {
+      "repository": "SecretAardvark/pi-overseer",
+      "revision": "9517b2302e0a4f8cafdfb48ff24dc98a7386e9a1",
+      "url": "https://github.com/SecretAardvark/pi-overseer/tree/9517b2302e0a4f8cafdfb48ff24dc98a7386e9a1",
+      "commit_date": "2026-07-25",
+      "inspection": "selected source and documentation; no execution",
+      "files_consulted": [
+        "package.json",
+        "docs/overseer-dogfood.md",
+        "src/gates.ts",
+        "src/worker-selection.ts"
+      ]
+    },
+    {
+      "repository": "boadij/pi-herdsman",
+      "revision": "9e5bbd7bc81afedbd95623a4ca4b2af89487a25e",
+      "url": "https://github.com/boadij/pi-herdsman/tree/9e5bbd7bc81afedbd95623a4ca4b2af89487a25e",
+      "commit_date": "2026-10-04",
+      "inspection": "selected source and documentation; no execution",
+      "files_consulted": [
+        "README.md",
+        "package.json",
+        "docs/getting-started.md",
+        "docs/guides/project-orchestration.md",
+        "extension/mailbox.ts",
+        "extension/supervision.ts",
+        "extension/lock.ts"
+      ]
+    },
+    {
+      "repository": "yigitkonur/herdr-pm",
+      "inspection": "unavailable",
+      "note": "Public clone failed with authentication request. No claim about deletion, renaming or private status."
+    },
+    {
+      "repository": "useagent/ao",
+      "revision": "e55012793c90e1a6f01fe47530139045d95f0d9a",
+      "url": "https://github.com/useagent/ao/tree/e55012793c90e1a6f01fe47530139045d95f0d9a",
+      "commit_date": "2026-05-31",
+      "inspection": "selected source and documentation; no execution",
+      "files_consulted": [
+        "README.md",
+        "packages/core/src/types.ts",
+        "packages/core/src/session-manager.ts"
+      ]
+    },
+    {
+      "repository": "karpathy/autoresearch",
+      "revision": "228791fb499afffb54b46200aca536f79142f117",
+      "url": "https://github.com/karpathy/autoresearch/tree/228791fb499afffb54b46200aca536f79142f117",
+      "commit_date": "2026-03-25",
+      "inspection": "documentation and manifests only; no execution",
+      "files_consulted": [
+        "README.md",
+        "program.md"
+      ]
+    },
+    {
+      "repository": "openai/symphony",
+      "revision": "be10a1b79df723d6d7612b5651c8522704dafb2e",
+      "url": "https://github.com/openai/symphony/tree/be10a1b79df723d6d7612b5651c8522704dafb2e",
+      "commit_date": "2026-09-15",
+      "inspection": "documentation and manifests only; no execution",
+      "files_consulted": [
+        "README.md",
+        "SPEC.md"
+      ]
+    },
+    {
+      "repository": "Dicklesworthstone/mcp_agent_mail",
+      "revision": "3fad5ec672869f81d2ca0a4c525dde004ac96f45",
+      "url": "https://github.com/Dicklesworthstone/mcp_agent_mail/tree/3fad5ec672869f81d2ca0a4c525dde004ac96f45",
+      "commit_date": "2026-09-29",
+      "inspection": "selected source and documentation; no execution",
+      "files_consulted": [
+        "README.md",
+        "LICENSE",
+        "src/mcp_agent_mail/app.py"
+      ]
+    },
+    {
+      "repository": "gastownhall/gastown",
+      "revision": "649b832b7672bc7a2dbef26f5983aba6198b819b",
+      "url": "https://github.com/gastownhall/gastown/tree/649b832b7672bc7a2dbef26f5983aba6198b819b",
+      "commit_date": "2026-07-23",
+      "inspection": "documentation and manifests only; no execution",
+      "files_consulted": [
+        "README.md"
+      ]
+    },
+    {
+      "repository": "gastownhall/beads",
+      "revision": "c4305ff01ec70823d4346630ca8a959adeaa1027",
+      "url": "https://github.com/gastownhall/beads/tree/c4305ff01ec70823d4346630ca8a959adeaa1027",
+      "commit_date": "2026-10-04",
+      "inspection": "documentation and manifests only; no execution",
+      "files_consulted": [
+        "README.md",
+        "docs/index.md"
+      ]
+    },
+    {
+      "repository": "madarco/agentbox",
+      "revision": "605ee75d63319003c188bc532d4e5b2ba36a51d6",
+      "url": "https://github.com/madarco/agentbox/tree/605ee75d63319003c188bc532d4e5b2ba36a51d6",
+      "commit_date": "2026-09-23",
+      "inspection": "documentation and manifests only; no execution",
+      "files_consulted": [
+        "README.md",
+        "herdr-plugin.toml",
+        "SECURITY.md"
+      ]
+    }
+  ],
+  "protocol_references": [
+    {
+      "name": "ACP overview draft",
+      "url": "https://github.com/agentclientprotocol/agent-client-protocol/blob/main/docs/protocol/v1/draft/overview.mdx",
+      "method": "web documentation; not revision pinned"
+    },
+    {
+      "name": "A2A specification",
+      "url": "https://a2a-protocol.org/latest/specification/",
+      "method": "web documentation; not revision pinned"
+    }
+  ]
+}

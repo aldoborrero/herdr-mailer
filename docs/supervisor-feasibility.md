@@ -2,7 +2,9 @@
 
 Fecha: 4 de octubre de 2026. Estudio y propuesta, no implementación del supervisor.
 
-**Recomendación: plugin propio en Rust, pequeño y separado de mailer, que use la gestión nativa de worktrees y sesiones de Herdr.** Un controlador persistente conserva tareas y aplica reglas; una sesión real de Codex, Claude o Pi toma las decisiones que requieren razonamiento. Mailer comunica y despierta a los agentes. SQLite conserva el estado de la coordinación. NATS sigue siendo opcional y pertenece a mailer.
+**Actualización del mismo día:** la [ampliación del ecosistema](ecosystem-expansion.md) incorpora herdr-projects, Pi Herdsman, pi-workflows, GNHF y otras alternativas que no cubría esta primera comparación. La recomendación actual es evaluar **herdr-projects + mailer antes de construir un controlador nuevo**. Las pruebas e invariantes de este documento siguen siendo aplicables; la elección de implementar desde cero queda condicionada a esa evaluación.
+
+**Propuesta original, ahora alternativa condicionada: plugin propio en Rust, pequeño y separado de mailer, que use la gestión nativa de worktrees y sesiones de Herdr.** Un controlador persistente conserva tareas y aplica reglas; una sesión real de Codex, Claude o Pi toma las decisiones que requieren razonamiento. Mailer comunica y despierta a los agentes. SQLite conserva el estado de la coordinación. NATS sigue siendo opcional y pertenece a mailer.
 
 Rust y Go son técnicamente viables. La recomendación de Rust es una decisión de diseño para un componente nuevo con estados explícitos y una posible TUI; **no se basa en acceso privilegiado a Herdr, en una mejora de rendimiento medida ni en que Go carezca de SDK**. Las consultas reales con ambos lenguajes funcionaron.
 
@@ -77,7 +79,7 @@ Las conclusiones de encaje son juicios de este estudio. Los hechos se contrastar
 | [Claude Agent Teams](https://code.claude.com/docs/en/agent-teams) | Supervisor, tareas y mensajes entre Claude Code | No satisface el requisito de tres runtimes nativos; experimental, con límites de recuperación documentados | Válido si el usuario decide trabajar solamente con Claude |
 | [LangGraph](https://docs.langchain.com/oss/python/langgraph/persistence) | Grafo de agentes, checkpoints e interrupciones | Adaptar terminales, procesos, Git, recuperación de efectos externos y mailer | Adecuado si quisiéramos construir agentes sobre APIs de modelos; mayor cambio de producto |
 | [Temporal](https://docs.temporal.io/activity-execution) | Ejecución durable, historial y reintentos de actividades | Servicio adicional, workers y actividades idempotentes para Herdr/Git; no elimina efectos externos ambiguos | Considerarlo al pasar a un servicio compartido/multihost, no para este host |
-| Controlador propio acotado | Contrato exacto para Herdr + mailer + runtimes actuales | Hay que construir y probar scheduler, journal y recuperación | Recomendado si se mantienen los límites propuestos |
+| Controlador propio acotado | Contrato exacto para Herdr + mailer + runtimes actuales | Hay que construir y probar scheduler, journal y recuperación | Alternativa si la evaluación de los nuevos candidatos no satisface los contratos |
 
 No sumaría Swarm, Loop y Dispatch como tres motores simultáneos: competirían por decidir quién posee una tarea, quién puede reintentar y quién retira un worktree. Sí pueden inspirar invariantes o ejecutar una receta explícita sin adquirir autoridad propia.
 

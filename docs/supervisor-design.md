@@ -2,6 +2,8 @@
 
 Estado: propuesta resultante del [estudio de viabilidad](supervisor-feasibility.md), 4 de octubre de 2026. Los nombres `herdr-supervisor`, herramientas, tablas y configuración de este documento son propuestos; no son comandos disponibles hoy.
 
+La [ampliación de investigación](ecosystem-expansion.md) recomienda evaluar herdr-projects + mailer antes de implementar este motor. Los contratos de este diseño sirven también como criterios de aceptación para esa adaptación.
+
 ## Responsabilidades
 
 El sistema recibe un objetivo y unos límites. Una sesión de agente supervisor propone un plan y decide sobre hallazgos. El controlador valida esas decisiones, mantiene el estado y ejecuta efectos externos. Herdr proporciona las sesiones visibles y los worktrees. Mailer entrega avisos y preguntas. Git y las herramientas del proyecto proporcionan la evidencia de los cambios.
