@@ -31,6 +31,8 @@ The launcher sets `--session-id` to the registered runtime UUID. For Pi it passe
 
 Send to `reviewer` from another registered mailer credential. Keep the runtime process open for automatic reception. Additional ordinary runtime arguments can follow the launcher command. Identity/channel override arguments are rejected. Starting, resuming or forking a different conversation requires a new registration/configuration. A Pi lifecycle change stops its connection; a mismatching session UUID cannot silently inherit the old route.
 
+The launcher sets the child runtime's `HERDR_MAILER_CREDENTIAL` and `HERDR_MAILER_STATE` from the receiver configuration, overriding any sender values inherited from its parent. It preserves `HERDR_MAILER_CONFIG` for the inbound bridge. Consequently, outgoing `herdr-mailer send` and `reply` calls use the receiver's scoped identity by default. Only the credential file path is inherited; the token is never placed in argv or logs.
+
 To resume the same Claude conversation after stopping it, keep its configuration, credential and receipt directory and run `herdr-mailer-runtime --development-channel --resume-session`. The launcher supplies only the configured UUID to `--resume`. Pi's `--session-id` reopens the exact registered session when it already exists. Neither path chooses a different or most-recent conversation implicitly.
 
 The components are also available at `$out/share/herdr-mailer/runtimes/`: `claude.js`, `pi.js` and `bridge.js`. The launcher is the supported Claude session-binding path: MCP does not authenticate a Claude conversation UUID, so a bare MCP config alone cannot verify which conversation loaded it. Same-UID administrators remain trusted. No arbitrary external Claude socket is assumed.

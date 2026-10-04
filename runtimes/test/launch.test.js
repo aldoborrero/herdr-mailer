@@ -71,3 +71,49 @@ test("launcher binds runtime identity, requires channel opt-in and never passes 
       assert.notEqual(call([...optIn, flag]).status, 0, flag);
   }
 });
+
+test("both runtime children override conflicting sender environment and retain bridge config", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hm-launch-env-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const credential = path.join(dir, "receiver.token");
+  const state = path.join(dir, "receiver-state");
+  const token = "receiver-token-must-not-appear-in-output";
+  fs.writeFileSync(credential, token, { mode: 0o600 });
+  const file = path.join(dir, "config.json");
+  for (const runtime of ["pi", "claude"]) {
+    fs.writeFileSync(
+      path.join(dir, runtime),
+      `#!${process.execPath}\nconsole.log(JSON.stringify({credential:process.env.HERDR_MAILER_CREDENTIAL,state:process.env.HERDR_MAILER_STATE,config:process.env.HERDR_MAILER_CONFIG,args:process.argv.slice(2)}));\n`,
+      { mode: 0o700 },
+    );
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        runtime,
+        location: randomUUID(),
+        credential,
+        state,
+        receipts: path.join(dir, "receipts"),
+      }),
+    );
+    const args = [path.resolve("launch.js")];
+    if (runtime === "claude") args.push("--development-channel");
+    const result = spawnSync(process.execPath, args, {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: dir + path.delimiter + process.env.PATH,
+        HERDR_MAILER_CONFIG: file,
+        HERDR_MAILER_CREDENTIAL: "/sender/token",
+        HERDR_MAILER_STATE: "/sender/state",
+      },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const child = JSON.parse(result.stdout);
+    assert.equal(child.credential, credential);
+    assert.equal(child.state, state);
+    assert.equal(child.config, file);
+    assert.ok(!result.stdout.includes(token));
+    assert.ok(!result.stderr.includes(token));
+  }
+});

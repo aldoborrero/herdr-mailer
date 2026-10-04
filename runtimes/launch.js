@@ -57,7 +57,17 @@ if (
   )
 )
   throw new Error("session and channel flags are managed by the launcher");
-const child = spawn(command, [...runtimeArgs, ...args], { stdio: "inherit" });
+const child = spawn(command, [...runtimeArgs, ...args], {
+  stdio: "inherit",
+  env: {
+    ...process.env,
+    // Outgoing CLI calls must use the same recipient identity as the bridge,
+    // even when another mailer worker starts this runtime.
+    HERDR_MAILER_CREDENTIAL: config.credential,
+    HERDR_MAILER_STATE: config.state,
+    HERDR_MAILER_CONFIG: process.env.HERDR_MAILER_CONFIG,
+  },
+});
 for (const signal of ["SIGINT", "SIGTERM"])
   process.on(signal, () => child.kill(signal));
 child.on("error", () => {

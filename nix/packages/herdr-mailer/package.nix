@@ -3,6 +3,7 @@
   src,
   buildGoModule,
   nats-server,
+  nodejs,
   runtimes,
 }:
 buildGoModule {
@@ -11,7 +12,10 @@ buildGoModule {
   inherit src;
   vendorHash = "sha256-y7LXiksnmJY/W8WH5CwfZqxXxedlQnlUTXMBZM5+hvA=";
   subPackages = [ "cmd/herdr-mailer" ];
-  nativeCheckInputs = [ nats-server ];
+  nativeCheckInputs = [
+    nats-server
+    nodejs
+  ];
   checkPhase = ''
     runHook preCheck
     go test ./...
