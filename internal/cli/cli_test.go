@@ -52,7 +52,12 @@ func TestCLICompatibilityFlow(t *testing.T) {
 	if e := json.Unmarshal(run("--credential", a, "ask", "bob", "question"), &ask); e != nil {
 		t.Fatal(e)
 	}
-	run("--credential", a, "send", "bob", "notice")
+	first := run("--credential", a, "send", "bob", "notice", "--operation-id", "cli-notice")
+	replay := run("--credential", a, "send", "bob", "notice", "--operation-id", "cli-notice")
+	if !bytes.Equal(first, replay) {
+		t.Fatal("CLI replay changed message")
+	}
+	run("--credential", a, "capabilities")
 	var inbox []map[string]any
 	if e := json.Unmarshal(run("--credential", b, "inbox", "--unread", "--json"), &inbox); e != nil || len(inbox) != 2 {
 		t.Fatal(inbox, e)

@@ -132,13 +132,14 @@ func New(out, errOut io.Writer) *cobra.Command {
 	root.AddCommand(serve)
 	for _, op := range []string{"send", "ask", "reply"} {
 		var ttl string
-		var askAuthor string
+		var askAuthor, operationID, recipientSession string
+		var recipientEpoch int64
 		target := "recipient"
 		if op == "reply" {
 			target = "ask-id"
 		}
 		c := &cobra.Command{Use: op + " <" + target + "> <body>", Args: cobra.ExactArgs(2), RunE: func(cmd *cobra.Command, args []string) error {
-			r := daemon.Request{Op: cmd.Name(), Recipient: args[0], Body: args[1], TTL: ttl}
+			r := daemon.Request{Op: cmd.Name(), Recipient: args[0], Body: args[1], TTL: ttl, OperationID: operationID, RecipientSession: recipientSession, RecipientEpoch: recipientEpoch}
 			if cmd.Name() == "reply" {
 				r.ID = args[0]
 				r.Recipient = ""
@@ -146,6 +147,9 @@ func New(out, errOut io.Writer) *cobra.Command {
 			}
 			return call(cmd, r)
 		}}
+		c.Flags().StringVar(&operationID, "operation-id", "", "stable retry key scoped to the logical author")
+		c.Flags().StringVar(&recipientSession, "recipient-session", "", "require exact recipient mailer session (paired with epoch)")
+		c.Flags().Int64Var(&recipientEpoch, "recipient-epoch", 0, "require exact recipient epoch (paired with session)")
 		c.Flags().StringVar(&ttl, "ttl", "24h", "delivery expiry (maximum 720h)")
 		if op == "reply" {
 			c.Flags().StringVar(&askAuthor, "author", "", "original ask author when an ID is ambiguous")
@@ -164,7 +168,7 @@ func New(out, errOut io.Writer) *cobra.Command {
 	}}
 	read.Flags().StringVar(&readAuthor, "author", "", "message author when an ID is ambiguous")
 	root.AddCommand(read)
-	for _, op := range []string{"status", "doctor"} {
+	for _, op := range []string{"status", "doctor", "capabilities"} {
 		root.AddCommand(&cobra.Command{Use: op, Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error { return call(cmd, daemon.Request{Op: cmd.Name()}) }})
 	}
 	var follow bool

@@ -93,6 +93,8 @@ herdr-mailer events --follow --cursor 0
 
 All command output is JSON. Bodies support up to 65,536 UTF-8 bytes. See [CLI compatibility](docs/compatibility.md) for expiry, author-scoped IDs and differences from hmail.
 
+Supervisors can safely retry `send`, `ask` and `reply` with `--operation-id`, and require an exact destination with `--recipient-session` plus `--recipient-epoch`. See [retry-safe sends](docs/idempotent-send.md) for the transaction and replay contract. `capabilities` reports support through the authenticated API.
+
 ## Native delivery
 
 For Codex, use an existing conversation's **exact thread UUID**, not a Herdr pane ID. Set `CODEX_THREAD_UUID` to that value, then run in the second terminal:
