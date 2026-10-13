@@ -68,7 +68,8 @@ func Open(dir, owner string) (*Store, error) {
  CREATE TABLE IF NOT EXISTS jobs(id TEXT NOT NULL REFERENCES messages(id), channel TEXT NOT NULL, epoch INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, next INTEGER NOT NULL DEFAULT 0, state TEXT NOT NULL DEFAULT 'pending', error TEXT NOT NULL DEFAULT '', PRIMARY KEY(id,channel));
  CREATE TABLE IF NOT EXISTS events(cursor INTEGER PRIMARY KEY AUTOINCREMENT, recipient TEXT NOT NULL, kind TEXT NOT NULL, message TEXT NOT NULL);
  CREATE INDEX IF NOT EXISTS recipient_events ON events(recipient,cursor);
- CREATE INDEX IF NOT EXISTS pending_jobs ON jobs(state,next);`)
+ CREATE INDEX IF NOT EXISTS pending_jobs ON jobs(state,next);
+ CREATE TABLE IF NOT EXISTS send_operations(origin TEXT NOT NULL, operation TEXT NOT NULL, request_hash TEXT NOT NULL, message TEXT NOT NULL REFERENCES messages(id), PRIMARY KEY(origin,operation));`)
 	if err != nil {
 		db.Close()
 		return nil, err
@@ -152,36 +153,10 @@ func (s *Store) Session(ctx context.Context, agent string) (record.Session, erro
 	}
 	return r, err
 }
+
+// Send preserves the existing API; callers that retry effects should use SendWithOptions.
 func (s *Store) Send(ctx context.Context, token, recipient, body, kind, correlation string, ttl time.Duration, bridge bool, askAuthor ...string) (record.Message, error) {
-	var m record.Message
-	if ttl <= 0 || ttl > 30*24*time.Hour {
-		return m, fmt.Errorf("ttl must be between 0 and 720h")
-	}
-	session, err := s.Authenticate(ctx, token)
-	if err != nil {
-		return m, err
-	}
-	if kind == "reply" {
-		ask, e := s.Read(ctx, session.Agent, correlation, false, askAuthor...)
-		if e != nil {
-			return m, e
-		}
-		if ask.Kind != "ask" {
-			return m, fmt.Errorf("correlation is not an ask")
-		}
-		recipient = ask.Author
-	}
-	now := time.Now().UTC()
-	m = record.Message{Type: record.MessageType, ID: uuid.NewString(), Owner: s.Owner, Author: session.Agent, Recipient: recipient, Session: session.ID, Epoch: session.Epoch, CreatedAt: now, ExpiresAt: now.Add(ttl), Kind: kind, Correlation: correlation, Body: body}
-	// Carry explicit routing through broker delays, rather than rebinding on receipt.
-	target, err := s.Session(ctx, recipient)
-	if err == nil {
-		m.RecipientSession, m.RecipientEpoch = target.ID, target.Epoch
-	} else if !errors.Is(err, sql.ErrNoRows) {
-		return m, err
-	}
-	_, err = s.persist(ctx, m, bridge, token)
-	return m, err
+	return s.SendWithOptions(ctx, token, recipient, body, kind, correlation, ttl, bridge, SendOptions{}, askAuthor...)
 }
 
 // Receive must complete before a broker delivery can be acknowledged.
@@ -189,6 +164,24 @@ func (s *Store) Receive(ctx context.Context, m record.Message) (bool, error) {
 	return s.persist(ctx, m, false, "")
 }
 func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, token string) (bool, error) {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+	added, err := s.persistTx(ctx, tx, m, bridge, token)
+	if err != nil {
+		return false, err
+	}
+	if err = tx.Commit(); err != nil {
+		return false, err
+	}
+	if added {
+		s.Notify()
+	}
+	return added, nil
+}
+func (s *Store) persistTx(ctx context.Context, tx *sql.Tx, m record.Message, bridge bool, token string) (bool, error) {
 	if err := m.Validate(); err != nil {
 		return false, err
 	}
@@ -199,11 +192,6 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 	if err != nil {
 		return false, err
 	}
-	tx, err := s.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return false, err
-	}
-	defer tx.Rollback()
 	if token != "" {
 		var current string
 		err = tx.QueryRowContext(ctx, "SELECT id FROM sessions WHERE token=? AND agent=? AND epoch=?", identity.Hash(token), m.Author, m.Epoch).Scan(&current)
@@ -231,7 +219,7 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 				return false, ErrAskResolved
 			}
 			// Only the exact accepted reply can be replayed. No message, job or event is added.
-			return false, tx.Commit()
+			return false, nil
 		}
 		if !errors.Is(err, sql.ErrNoRows) {
 			return false, err
@@ -258,7 +246,7 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 		}
 	}
 	if n == 0 {
-		return false, tx.Commit()
+		return false, nil
 	}
 	var epoch int64
 	err = tx.QueryRowContext(ctx, "SELECT epoch FROM sessions WHERE agent=?", m.Recipient).Scan(&epoch)
@@ -281,11 +269,7 @@ func (s *Store) persist(ctx context.Context, m record.Message, bridge bool, toke
 	if err != nil {
 		return false, err
 	}
-	err = tx.Commit()
-	if err == nil {
-		s.Notify()
-	}
-	return true, err
+	return true, nil
 }
 func (s *Store) Inbox(ctx context.Context, agent string, unread bool) ([]record.Message, error) {
 	q := "SELECT record FROM messages WHERE recipient=?"

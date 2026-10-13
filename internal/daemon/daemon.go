@@ -28,19 +28,22 @@ import (
 const maxRequestBytes = 6*record.MaxBodyBytes + 16*1024
 
 type Request struct {
-	Op        string `json:"op"`
-	Token     string `json:"token,omitempty"`
-	Agent     string `json:"agent,omitempty"`
-	Author    string `json:"author,omitempty"`
-	Runtime   string `json:"runtime,omitempty"`
-	Location  string `json:"location,omitempty"`
-	Recipient string `json:"recipient,omitempty"`
-	Body      string `json:"body,omitempty"`
-	ID        string `json:"id,omitempty"`
-	TTL       string `json:"ttl,omitempty"`
-	Unread    bool   `json:"unread,omitempty"`
-	Follow    bool   `json:"follow,omitempty"`
-	Cursor    int64  `json:"cursor,omitempty"`
+	OperationID      string `json:"operationId,omitempty"`
+	RecipientSession string `json:"recipientSession,omitempty"`
+	RecipientEpoch   int64  `json:"recipientEpoch,omitempty"`
+	Op               string `json:"op"`
+	Token            string `json:"token,omitempty"`
+	Agent            string `json:"agent,omitempty"`
+	Author           string `json:"author,omitempty"`
+	Runtime          string `json:"runtime,omitempty"`
+	Location         string `json:"location,omitempty"`
+	Recipient        string `json:"recipient,omitempty"`
+	Body             string `json:"body,omitempty"`
+	ID               string `json:"id,omitempty"`
+	TTL              string `json:"ttl,omitempty"`
+	Unread           bool   `json:"unread,omitempty"`
+	Follow           bool   `json:"follow,omitempty"`
+	Cursor           int64  `json:"cursor,omitempty"`
 }
 type Response struct {
 	Data  any    `json:"data,omitempty"`
@@ -203,6 +206,8 @@ func (s *Server) dispatch(ctx context.Context, r Request) (any, error) {
 		return nil, err
 	}
 	switch r.Op {
+	case "capabilities":
+		return map[string]any{"protocol": 2, "idempotentSend": true, "recipientPrecondition": true}, nil
 	case "send", "ask", "reply":
 		ttl := 24 * time.Hour
 		if r.TTL != "" {
@@ -211,7 +216,7 @@ func (s *Server) dispatch(ctx context.Context, r Request) (any, error) {
 				return nil, err
 			}
 		}
-		return s.Store.Send(ctx, r.Token, r.Recipient, r.Body, r.Op, r.ID, ttl, s.Broker != nil, r.Author)
+		return s.Store.SendWithOptions(ctx, r.Token, r.Recipient, r.Body, r.Op, r.ID, ttl, s.Broker != nil, store.SendOptions{OperationID: r.OperationID, RecipientSession: r.RecipientSession, RecipientEpoch: r.RecipientEpoch}, r.Author)
 	case "inbox":
 		return s.Store.Inbox(ctx, session.Agent, r.Unread)
 	case "read":
