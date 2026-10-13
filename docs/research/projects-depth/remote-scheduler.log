@@ -1,13 +1,13 @@
-   Compiling herdr-projects v0.2.34 (/tmp/herdr-projects-depth-review)
+   Compiling herdr-projects v0.2.34 ($REVIEW_CHECKOUT)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 3.99s
-     Running unittests src/main.rs (/tmp/herdr-projects-depth-target/debug/deps/herdr_projects-692fb5fa9b933495)
+     Running unittests src/main.rs ($CARGO_TARGET_DIR/debug/deps/herdr_projects-692fb5fa9b933495)
 
 running 1 test
 test coordinator_review::review_first_project_monopolizes_polling_of_a_shared_remote_machine ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 331 filtered out; finished in 0.34s
 
-     Running tests/cli.rs (/tmp/herdr-projects-depth-target/debug/deps/cli-4047a64516d593d1)
+     Running tests/cli.rs ($CARGO_TARGET_DIR/debug/deps/cli-4047a64516d593d1)
 
 running 0 tests
 

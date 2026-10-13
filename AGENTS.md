@@ -14,7 +14,7 @@ New Go project: durable inter-agent messaging for Herdr with ATProto-inspired id
 
 ## Commands
 
-Implement a justfile providing test, lint, fmt, check, build and run. Go tests must also run in the Nix package build. Use the local nix-project-scaffold, nix-blueprint and nix-treefmt-formatter skills under /home/aldo/.codex/skills/.
+Implement a justfile providing test, lint, fmt, check, build and run. Go tests must also run in the Nix package build. Use the local nix-project-scaffold, nix-blueprint and nix-treefmt-formatter skills from the local Codex skills directory.
 
 ## Invariants
 

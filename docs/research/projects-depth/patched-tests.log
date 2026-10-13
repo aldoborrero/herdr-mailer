@@ -1,5 +1,5 @@
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
-     Running unittests src/main.rs (/tmp/herdr-projects-depth-target/debug/deps/herdr_projects-692fb5fa9b933495)
+     Running unittests src/main.rs ($CARGO_TARGET_DIR/debug/deps/herdr_projects-692fb5fa9b933495)
 
 running 332 tests
 test agents::tests::resume_arguments_follow_herdrs_table ... ok
@@ -337,7 +337,7 @@ test runner::tests::group_kill_reaches_grandchildren ... ok
 
 test result: ok. 332 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.97s
 
-     Running tests/cli.rs (/tmp/herdr-projects-depth-target/debug/deps/cli-4047a64516d593d1)
+     Running tests/cli.rs ($CARGO_TARGET_DIR/debug/deps/cli-4047a64516d593d1)
 
 running 4 tests
 test ticker_start_without_projects_creates_nothing ... ok
