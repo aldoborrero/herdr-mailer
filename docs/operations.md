@@ -54,6 +54,17 @@ The flake exports `homeModules.herdr-mailer` and `nixosModules.herdr-mailer`. Bo
 }
 ```
 
+## Herdr plugin
+
+The package ships a Herdr plugin at `share/herdr-mailer/plugin`. Its startup command launches the daemon in the background against `$HERDR_MAILER_STATE` (default `~/.local/state/herdr-mailer`), logging to `daemon.log` there and recording `plugin-daemon.pid`. It never runs `init`: an uninitialized state directory is reported and skipped. The daemon's state lock makes a second start a no-op. Herdr has no shutdown hook, so disabling or unlinking the plugin leaves the daemon running; use the `stop` or `restart` actions. Do not also enable the systemd user service from the modules above against the same state directory.
+
+```sh
+herdr-mailer init
+herdr plugin link "$(nix build --print-out-paths .#herdr-mailer)/share/herdr-mailer/plugin" --enabled
+```
+
+The plugin is independent of hmail's `herdr-mail` plugin: different id, executable, socket and database. It does not address Herdr panes; agents still need their own registrations and tokens.
+
 ## CI provenance
 
 The workflow derives nixpkgs from `flake.lock`. Action tags and full commit hashes were checked against their upstream releases on 2026-10-04: [checkout v7.0.0](https://github.com/actions/checkout/releases/tag/v7.0.0), commit [9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0](https://github.com/actions/checkout/commit/9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0), and [install-nix-action v31.10.6](https://github.com/cachix/install-nix-action/releases/tag/v31.10.6), commit [8aa03977d8d733052d78f4e008a241fd1dbf36b3](https://github.com/cachix/install-nix-action/commit/8aa03977d8d733052d78f4e008a241fd1dbf36b3). CI runs one flake check, including package tests, race tests, vet and formatting. No repository action has been published or triggered during local implementation.

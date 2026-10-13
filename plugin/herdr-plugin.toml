@@ -1,0 +1,28 @@
+id = "herdr-mailer"
+name = "Mailer"
+version = "0.1.0"
+min_herdr_version = "0.8.0"
+description = "Durable inter-agent messaging: a local daemon stores messages in SQLite and delivers them through each runtime's native interface"
+platforms = ["linux", "macos"]
+
+# Starts the daemon and exits. The daemon holds an exclusive lock on its state
+# directory, so a second start while one is running is a harmless no-op. State
+# must already exist (`herdr-mailer init`); the plugin never bootstraps an owner
+# identity on its own.
+[[startup]]
+id = "daemon"
+command = ["./scripts/start.sh"]
+
+# Herdr has no shutdown hook, so disabling or unlinking the plugin leaves the
+# daemon running. These actions are the way to turn it off.
+[[actions]]
+id = "stop"
+title = "Stop the mailer daemon"
+contexts = ["workspace"]
+command = ["./scripts/stop.sh"]
+
+[[actions]]
+id = "restart"
+title = "Restart the mailer daemon"
+contexts = ["workspace"]
+command = ["./scripts/restart.sh"]
