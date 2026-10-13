@@ -12,7 +12,7 @@ import uuid
 ROOT = pathlib.Path(tempfile.mkdtemp(prefix='herdr-supervisor-probe-'))
 EVIDENCE = ROOT / 'evidence'
 EVIDENCE.mkdir()
-MAILER = os.environ.get('HERDR_MAILER_BIN', '/nix/store/0b23wbxqgfr4vi93jipzyflz3kd0ffzb-herdr-mailer-0.1.0/bin/herdr-mailer')
+MAILER = os.environ.get('HERDR_MAILER_BIN', 'herdr-mailer')
 result = {'tests': {}, 'mailer_binary': MAILER}
 
 def record(name, condition, **details):
@@ -28,7 +28,7 @@ def rpc(path, request):
 
 if os.environ.get('HERDR_ENV') != '1':
     raise SystemExit('Read-only Herdr inspection requires HERDR_ENV=1')
-herdr_socket = os.environ.get('HERDR_SOCKET_PATH', '/home/aldo/.config/herdr/herdr.sock')
+herdr_socket = os.environ.get('HERDR_SOCKET_PATH', os.path.expanduser('~/.config/herdr/herdr.sock'))
 ping = rpc(herdr_socket, {'id': 'study-ping', 'method': 'ping', 'params': {}})
 record('herdr_live_protocol', ping.get('result', {}).get('protocol') == 22, response=ping)
 with socket.socket(socket.AF_UNIX) as s:

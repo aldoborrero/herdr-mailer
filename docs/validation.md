@@ -9,8 +9,8 @@ The native Go runs used isolated cache/server settings:
 ```sh
 export GOPATH="$PWD/.go"
 export GOMODCACHE="$PWD/.go/pkg/mod"
-export GOCACHE=/tmp/herdr-mailer-go-cache
-export NATS_SERVER=/nix/store/6bns5h7y5png9ska6aan6hax12szzmvf-nats-server-2.14.7/bin/nats-server
+export GOCACHE="$(mktemp -d)"
+export NATS_SERVER="$(command -v nats-server)"
 
 go test ./...
 go test -race ./...
@@ -52,7 +52,6 @@ Broker integration tests fail rather than skip when `nats-server` is unavailable
 
 The installed `codex queue --help` was inspected. A separate temporary mailer daemon, using the Nix-built binary and fresh owner/session credentials, sent one authorized milestone to coordinator thread `01a0f9be-cb70-7390-bcad-7c50b52940be` through the actual Codex adapter.
 
-- Temporary state: `/tmp/herdr-mailer-native.QMSknM`.
 - Message: `dfd4c97b-d3af-4174-90d3-a7f22e758e4f`.
 - Observed recipient status: `{"native:accepted":1}`.
 - The private daemon was stopped after the check; the shared Codex app server was untouched.
@@ -63,7 +62,7 @@ This proves successful queue-command acceptance through the real adapter. It doe
 
 One trusted same-UID owner domain and one local routing authority; no cross-owner federation, PDS, public identity resolution or multi-host identity provisioning. Durable storage has no automatic pruning, quotas, schema migration command or terminal-job replay command. Broker poison records need operator investigation. Native bridges support Pi and Claude in addition to Codex, subject to the prerequisites below. Session credential isolation depends on the documented OS trust boundary. Codex crash windows may duplicate delivery; bridge intent/outcome windows are retained as ambiguous without automatic reinjection.
 
-The NixOS service module was also evaluated with `nixpkgs.lib.nixosSystem` against a synthetic user and `/tmp/herdr-mailer-module-eval` state path. The resulting unit selects the mailer executable, the explicit user, umask 0077 and restart-on-failure; no host configuration was activated.
+The NixOS service module was also evaluated with `nixpkgs.lib.nixosSystem` against a synthetic user and a temporary state path. The resulting unit selects the mailer executable, the explicit user, umask 0077 and restart-on-failure; no host configuration was activated.
 
 ## Coordinator invariants follow-up
 
@@ -125,7 +124,6 @@ The Go suite includes all previous coordinator reply/escaped-body regressions an
 
 Live checks used only **new isolated test sessions**, a temporary daemon, new credentials and temporary Claude/Pi configuration. No existing session, global settings or host service was changed. Both processes and the private daemon were stopped afterward.
 
-- Evidence directory: `/tmp/herdr-mailer-runtime-live.2RZU8r`.
 - Pi 0.87.1: runtime UUID `222ed1d0-f1f5-490b-80ac-b03218fddc8f`; mailer message `facf790d-3557-4ad7-b93a-c011e46d027d`. The real RPC output contains `message_end` with `role: custom` and that exact message ID/body. SQLite reports `native:accepted`. A subsequent assistant event reports `Provider is not configured: anthropic`, so no successful model response is claimed.
 - Claude Code 2.1.284: runtime UUID `cef8bb39-4392-41c6-b02e-fcee8f9c25d2`; mailer message `2f2d1bb3-3a9d-4f35-b434-6ac5e891aa8f`. The real Claude initialization event reports the same session UUID and the `herdr-mailer` MCP server as connected. SQLite reports `native:channel_written`. The isolated runtime reports `Not logged in · Please run /login`, `terminal_reason: api_error`, zero input/output tokens and zero cost. Neither channel consumption nor a model response is claimed.
 

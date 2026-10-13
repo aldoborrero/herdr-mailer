@@ -5,8 +5,8 @@ Fecha: 2026-10-04. Estudio y pruebas aisladas; no despliegue. La conclusión est
 ## Revisión y alcance
 
 - Upstream: [eliasstravik/herdr-projects](https://github.com/eliasstravik/herdr-projects/tree/4e4548c3c43888e6be1c96906215998f07dc63f0), SHA `4e4548c3c43888e6be1c96906215998f07dc63f0`, manifiesto 0.2.34. `git ls-remote ... HEAD` devolvió esa revisión.
-- Checkout de pruebas: `/tmp/herdr-projects-depth-review`; cambios limitados al módulo de pruebas independiente y la sustitución de la ruta de `kill`.
-- Artefactos Cargo: `/tmp/herdr-projects-depth-target`. `cargo test --locked` utiliza Cargo.lock upstream.
+- Checkout de pruebas: un directorio temporal (`$REVIEW_CHECKOUT` en los logs); cambios limitados al módulo de pruebas independiente y la sustitución de la ruta de `kill`.
+- Artefactos Cargo: un directorio temporal (`$CARGO_TARGET_DIR` en los logs). `cargo test --locked` utiliza Cargo.lock upstream.
 - Mailer: main `903df1d` al comienzo; se consultaron el registro/autorización, suscripciones NATS, entrega nativa y launcher. No se cambió su implementación.
 - Herdr: `herdr --version` devuelve `herdr 0.9.1`. `herdr machine add --help` confirma target SSH, label y `--remote-session`; no se llamó a `machine add`.
 - Fuentes web adicionales: [máquinas Herdr](https://herdr.dev/docs/connecting-machines/), [NetBird SSH](https://docs.netbird.io/manage/peers/ssh), consultadas el 4 de octubre. Son documentación actual, no prueba de nuestra configuración de red.
@@ -46,7 +46,7 @@ Desde un checkout de mailer con estos artefactos:
 
 ```sh
 mailer_study_dir="$PWD/docs/research/projects-depth"
-projects_review_dir="$(mktemp -d /tmp/projects-review.XXXXXX)"
+projects_review_dir="$(mktemp -d -t projects-review.XXXXXX)"
 git clone https://github.com/eliasstravik/herdr-projects.git "$projects_review_dir/upstream"
 git -C "$projects_review_dir/upstream" checkout --detach 4e4548c3c43888e6be1c96906215998f07dc63f0
 cd "$projects_review_dir/upstream"

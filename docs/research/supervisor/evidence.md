@@ -10,7 +10,7 @@ Fecha: 2026-10-04. Alcance: investigación y pruebas pequeñas de viabilidad, no
 | Binario de mailer usado | `/nix/store/0b23wbxqgfr4vi93jipzyflz3kd0ffzb-herdr-mailer-0.1.0/bin/herdr-mailer` |
 | Herdr cliente y servidor | `herdr status`: 0.9.1, protocolo 22, endpoint compatible, sin reinicio pendiente |
 | Esquema nativo | `herdr api schema --output ...`; extracto en [native-methods.json](native-methods.json), hash completo en [client-probes.json](client-probes.json) |
-| Worktrees existentes | `herdr worktree list --cwd /home/aldo/Dev/aldoborrero/herdr-mailer` mostró main y `feat/native-runtimes`, ambos abiertos en Herdr |
+| Worktrees existentes | `herdr worktree list --cwd .` en el checkout del mailer mostró main y `feat/native-runtimes`, ambos abiertos en Herdr |
 | Lanes inspeccionado | Git HEAD `d0783e566a4550c9084e33eb7b56333537146967`, limpio; README y `docs/architecture.md` |
 
 Las consultas reales a Herdr fueron de lectura. No se arrancó ni reinició ningún servidor compartido, no se instaló ningún plugin, no se crearon agentes ni se enviaron mensajes a sesiones de modelos. Los daemons temporales de mailer terminaron al cerrar sus pruebas. El worktree que contiene estos documentos es un worktree de documentación del estudio, no un trabajador del futuro supervisor.
@@ -41,7 +41,7 @@ La primera ejecución del harness de mailer buscó por error `mail.sock`; el có
 
 ## Fuentes de código que sustentan la comparación
 
-Las revisiones completas están en [upstream-revisions.json](upstream-revisions.json). Se descargaron para lectura en `/tmp/herdr-supervisor-feasibility-20261004/sources`; no se ejecutaron sus scripts de instalación ni se lanzaron sus workers.
+Las revisiones completas están en [upstream-revisions.json](upstream-revisions.json). Se descargaron para lectura en un directorio temporal; no se ejecutaron sus scripts de instalación ni se lanzaron sus workers.
 
 | Proyecto | Rutas consultadas o hallazgo determinante |
 | --- | --- |
@@ -72,7 +72,7 @@ No usarlo como test de CI: las consultas de Herdr son live y dependen del contex
 
 Se conservan los fuentes propios de las consultas [Rust](rust_probe.rs) y [Go](go_probe.go.txt). El archivo Go lleva `.txt` para no añadir un paquete de investigación a `go test ./...` del producto.
 
-El experimento Rust se construyó en `/tmp/herdr-supervisor-feasibility-20261004/rust-probe` con este manifiesto, cuyo path apunta al checkout exacto enumerado arriba:
+El experimento Rust se construyó en un directorio temporal con este manifiesto, cuyo path apunta al checkout exacto enumerado arriba:
 
 ```toml
 [package]

@@ -63,7 +63,7 @@
    Compiling anyhow v1.0.104
    Compiling jiff-core v0.1.1
    Compiling cpufeatures v0.2.17
-   Compiling herdr-projects v0.2.34 (/tmp/herdr-projects-depth-review)
+   Compiling herdr-projects v0.2.34 ($REVIEW_CHECKOUT)
    Compiling fastrand v2.5.0
    Compiling once_cell v1.21.4
    Compiling anstream v1.0.0
@@ -94,7 +94,7 @@
    Compiling clap_derive v4.6.7
    Compiling clap v4.6.7
     Finished `test` profile [unoptimized + debuginfo] target(s) in 26.81s
-     Running unittests src/main.rs (/tmp/herdr-projects-depth-target/debug/deps/herdr_projects-692fb5fa9b933495)
+     Running unittests src/main.rs ($CARGO_TARGET_DIR/debug/deps/herdr_projects-692fb5fa9b933495)
 
 running 325 tests
 test agents::tests::resume_arguments_follow_herdrs_table ... ok
