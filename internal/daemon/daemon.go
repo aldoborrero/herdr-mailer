@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"bufio"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
@@ -169,7 +170,17 @@ func (s *Server) handle(parent context.Context, conn net.Conn) {
 		return
 	}
 	// EOF or any further data cancels a streaming request; only one request per connection.
-	go func() { var b [1]byte; _, _ = conn.Read(b[:]); cancel() }()
+	// The encoder's trailing newline may still be unread, so whitespace is skipped.
+	rest := bufio.NewReader(io.MultiReader(dec.Buffered(), conn))
+	go func() {
+		for {
+			b, err := rest.ReadByte()
+			if err != nil || (b != ' ' && b != '\t' && b != '\r' && b != '\n') {
+				cancel()
+				return
+			}
+		}
+	}()
 	if r.Op == "events" {
 		s.events(ctx, conn, r)
 		return
